@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grydx — Request Access</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080a0f;
+            --bg2: #0d1018;
+            --bg3: #111520;
+            --surface: #141824;
+            --surface2: #1a2033;
+            --border: #1e2535;
+            --border2: #252d40;
+            --accent: #4fffb0;
+            --accent2: #00d4ff;
+            --accent3: #7b6cff;
+            --text: #e8edf5;
+            --text2: #8b97b0;
+            --text3: #4e5a72;
+            --red: #ff4f6a;
+            --gold: #f5c842;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Instrument Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+            min-height: 100vh;
+        }
+
+        /* Cursor */
+        .cursor {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen;
+        }
+
+        .cursor-ring {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(79, 255, 176, 0.3);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: all 0.12s ease-out;
+        }
+
+        /* Grid bg */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(79, 255, 176, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79, 255, 176, 0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: rgba(8, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+        }
+
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+        }
+
+        .logo-mark span {
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .logo-mark span:nth-child(1) {
+            opacity: 0.9;
+        }
+
+        .logo-mark span:nth-child(2) {
+            opacity: 0.5;
+        }
+
+        .logo-mark span:nth-child(3) {
+            opacity: 0.3;
+        }
+
+        .logo-mark span:nth-child(4) {
+            opacity: 0.7;
+        }
+
+        .nav-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+            cursor: none;
+        }
+
+        .nav-back:hover {
+            color: var(--accent);
+        }
+
+        .nav-back-arrow {
+            font-size: 16px;
+        }
+
+        /* Page layout */
+        .page {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Left panel */
+        .left-panel {
+            padding: 140px 80px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-glow {
+            position: absolute;
+            top: 30%;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(ellipse, rgba(79, 255, 176, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .left-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(79, 255, 176, 0.07);
+            border: 1px solid rgba(79, 255, 176, 0.2);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 36px;
+            width: fit-content;
+        }
+
+        .left-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .left-panel h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(40px, 4vw, 58px);
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 20px;
+        }
+
+        .left-panel h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .left-panel p {
+            color: var(--text2);
+            font-size: 16px;
+            line-height: 1.7;
+            font-weight: 300;
+            max-width: 440px;
+            margin-bottom: 48px;
+        }
+
+        .trust-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .trust-item:first-child {
+            border-top: 1px solid var(--border);
+        }
+
+        .trust-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(79, 255, 176, 0.08);
+            border: 1px solid rgba(79, 255, 176, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .trust-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            letter-spacing: -0.01em;
+        }
+
+        .trust-item p {
+            font-size: 13px;
+            color: var(--text2);
+            margin: 0;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* Right panel — form */
+        .right-panel {
+            padding: 140px 80px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-label-top {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text3);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            padding: 13px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Instrument Sans', sans-serif;
+            transition: border-color 0.2s, background 0.2s;
+            outline: none;
+            cursor: none;
+            appearance: none;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text3);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent);
+            background: rgba(79, 255, 176, 0.03);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234e5a72' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        select option {
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        /* Firm type selector */
+        .firm-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .firm-type {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            padding: 10px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.03em;
+            text-align: center;
+            cursor: none;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .firm-type:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(79, 255, 176, 0.04);
+        }
+
+        .firm-type.selected {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(79, 255, 176, 0.08);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            color: #000;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            transition: all 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.01em;
+        }
+
+        .submit-btn:hover {
+            background: #6fffbf;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(79, 255, 176, 0.2);
+        }
+
+        .submit-btn:disabled {
+            background: var(--surface2);
+            color: var(--text3);
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .form-note {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text3);
+            margin-top: 16px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.03em;
+        }
+
+        /* Success state */
+        .success-state {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(79, 255, 176, 0.1);
+            border: 1px solid rgba(79, 255, 176, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 24px;
+        }
+
+        .success-state h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .success-state p {
+            color: var(--text2);
+            font-size: 15px;
+            line-height: 1.6;
+            font-weight: 300;
+            max-width: 340px;
+            margin: 0 auto 32px;
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.05em;
+            cursor: none;
+            transition: gap 0.2s;
+        }
+
+        .back-home:hover {
+            gap: 12px;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-content {
+            animation: fadeUp 0.6s ease both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="grid-bg"></div>
+    <div class="noise"></div>
+
+    <nav>
+        <a href="index.html" class="logo">
+            <div class="logo-mark">
+                <span></span><span></span>
+                <span></span><span></span>
+            </div>
+            Grydx
+        </a>
+        <a href="index.html" class="nav-back">
+            <span class="nav-back-arrow">←</span> Back to home
+        </a>
+    </nav>
+
+    <div class="page">
+
+        <!-- Left panel -->
+        <div class="left-panel">
+            <div class="left-glow"></div>
+            <div class="left-badge">Private Beta · Limited Spots</div>
+            <h1>Get <em>early access</em><br>to Grydx.</h1>
+            <p>We're onboarding a select group of investment banks, PE firms, and hedge funds. Tell us about your team
+                and we'll be in touch within 48 hours.</p>
+
+            <div class="trust-items">
+                <div class="trust-item">
+                    <div class="trust-icon">🔒</div>
+                    <div>
+                        <h4>Enterprise Security</h4>
+                        <p>SOC 2 Type II certified. Your data never leaves your designated region.</p>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">⚡</div>
+                    <div>
+                        <h4>Onboarding in 48 Hours</h4>
+                        <p>Dedicated implementation team gets your team live fast, with zero disruption to existing
+                            workflows.</p>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">✦</div>
+                    <div>
+                        <h4>First 20 Institutions Free</h4>
+                        <p>Beta participants get 6 months complimentary access and direct input on the product roadmap.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="right-panel">
+
+            <div class="form-content" id="formContent">
+                <div class="form-label-top">Contact & Access Request</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="firstName" placeholder="James" />
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="lastName" placeholder="Anderson" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Work Email</label>
+                    <input type="email" id="email" placeholder="j.anderson@goldmansachs.com" />
+                </div>
+
+                <div class="form-group">
+                    <label>Institution / Firm Name</label>
+                    <input type="text" id="firm" placeholder="Goldman Sachs" />
+                </div>
+
+                <div class="form-group">
+                    <label>Firm Type</label>
+                    <div class="firm-types" id="firmTypes">
+                        <div class="firm-type" data-value="Investment Bank">Investment Bank</div>
+                        <div class="firm-type" data-value="Private Equity">Private Equity</div>
+                        <div class="firm-type" data-value="Hedge Fund">Hedge Fund</div>
+                        <div class="firm-type" data-value="Asset Manager">Asset Manager</div>
+                        <div class="firm-type" data-value="Corporate FP&A">Corporate FP&A</div>
+                        <div class="firm-type" data-value="Other">Other</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Team Size</label>
+                        <select id="teamSize">
+                            <option value="" disabled selected>Select range</option>
+                            <option>1–10 users</option>
+                            <option>11–50 users</option>
+                            <option>51–200 users</option>
+                            <option>200+ users</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Use Case</label>
+                        <select id="useCase">
+                            <option value="" disabled selected>Select use case</option>
+                            <option>LBO / M&A Modelling</option>
+                            <option>DCF & Valuation</option>
+                            <option>Risk Management</option>
+                            <option>Regulatory Reporting</option>
+                            <option>FP&A & Budgeting</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Anything else? (Optional)</label>
+                    <textarea id="message"
+                        placeholder="Tell us about your current spreadsheet pain points, or any specific integrations you need…"></textarea>
+                </div>
+
+                <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+                    Submit Request →
+                </button>
+                <div class="form-note">We respond within 48 hours · No spam, ever.</div>
+            </div>
+
+            <!-- Success State -->
+            <div class="success-state" id="successState">
+                <div class="success-icon">✓</div>
+                <h3>Request received.</h3>
+                <p>Thanks for reaching out. Our team will review your application and get back to you within 48 hours.
+                </p>
+                <a href="index.html" class="back-home">← Back to Grydx home</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Cursor
+        const cursor = document.getElementById('cursor');
+        const ring = document.getElementById('cursorRing');
+        let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX; mouseY = e.clientY;
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+        });
+        function animateRing() {
+            ringX += (mouseX - ringX) * 0.12;
+            ringY += (mouseY - ringY) * 0.12;
+            ring.style.left = ringX + 'px';
+            ring.style.top = ringY + 'px';
+            requestAnimationFrame(animateRing);
+        }
+        animateRing();
+
+        // Firm type toggle
+        let selectedFirm = '';
+        document.querySelectorAll('.firm-type').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.firm-type').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedFirm = el.dataset.value;
+            });
+        });
+
+        // Submit
+        function handleSubmit() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const firm = document.getElementById('firm').value.trim();
+
+            if (!firstName || !lastName || !email || !firm) {
+                // Shake empty required fields
+                [
+                    document.getElementById('firstName'),
+                    document.getElementById('lastName'),
+                    document.getElementById('email'),
+                    document.getElementById('firm')
+                ].forEach(el => {
+                    if (!el.value.trim()) {
+                        el.style.borderColor = 'var(--red)';
+                        el.style.animation = 'none';
+                        setTimeout(() => el.style.borderColor = '', 2000);
+                    }
+                });
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting…';
+
+            setTimeout(() => {
+                document.getElementById('formContent').style.display = 'none';
+                const success = document.getElementById('successState');
+                success.style.display = 'block';
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
