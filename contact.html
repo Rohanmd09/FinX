@@ -831,9 +831,11 @@
                 });
 
                 if (!res.ok) {
-                    const errBody = await res.json().catch(() => ({}));
-                    console.error('Supabase error:', errBody);
-                    throw new Error(errBody.message || `HTTP ${res.status}`);
+                    let errBody = {};
+                    try { errBody = await res.json(); } catch (_) { }
+                    console.error('Supabase error response:', res.status, errBody);
+                    const detail = errBody.message || errBody.error || errBody.hint || `HTTP ${res.status}`;
+                    throw new Error(detail);
                 }
 
                 // ── Success ───────────────────────────────────────────
@@ -842,10 +844,10 @@
                 success.style.display = 'block';
 
             } catch (err) {
-                console.error(err);
+                console.error('Submission error:', err);
                 btn.disabled = false;
                 btn.innerHTML = 'Submit Request &rarr;';
-                showError('Something went wrong — please try again or email us directly.');
+                showError('Error: ' + err.message);
             }
         }
     </script>
