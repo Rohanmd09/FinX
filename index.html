@@ -5,14 +5,2154 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grydx — The Enterprise Spreadsheet for Banking</title>
-
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-
     <style>
-        /* ✅ YOUR FULL ORIGINAL CSS — UNCHANGED */
-        /* (I kept everything exactly as-is from your file) */
+        :root {
+            --bg: #080a0f;
+            --bg2: #0d1018;
+            --bg3: #111520;
+            --surface: #141824;
+            --surface2: #1a2033;
+            --border: #1e2535;
+            --border2: #252d40;
+            --accent: #4fffb0;
+            --accent2: #00d4ff;
+            --accent3: #7b6cff;
+            --text: #e8edf5;
+            --text2: #8b97b0;
+            --text3: #4e5a72;
+            --red: #ff4f6a;
+            --gold: #f5c842;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Instrument Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none
+        }
+
+        .cursor {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen
+        }
+
+        .cursor-ring {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(79, 255, 176, .3);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: all .12s ease-out
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(79, 255, 176, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(79, 255, 176, .025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            opacity: .035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 20px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: rgba(8, 10, 15, .85);
+            backdrop-filter: blur(20px)
+        }
+
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px
+        }
+
+        .logo-mark span {
+            background: var(--accent);
+            border-radius: 2px
+        }
+
+        .logo-mark span:nth-child(1) {
+            opacity: .9
+        }
+
+        .logo-mark span:nth-child(2) {
+            opacity: .5
+        }
+
+        .logo-mark span:nth-child(3) {
+            opacity: .3
+        }
+
+        .logo-mark span:nth-child(4) {
+            opacity: .7
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none
+        }
+
+        .nav-links a {
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color .2s
+        }
+
+        .nav-links a:hover {
+            color: var(--text)
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: #000;
+            padding: 9px 22px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            transition: all .2s;
+            letter-spacing: .01em
+        }
+
+        .btn-primary:hover {
+            background: #6fffbf;
+            transform: translateY(-1px)
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: none
+        }
+
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text2);
+            border-radius: 2px;
+            transition: all .3s
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 0;
+            right: 0;
+            background: rgba(8, 10, 15, .97);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 99;
+            padding: 24px 24px 32px;
+            flex-direction: column;
+            gap: 0
+        }
+
+        .mobile-menu.open {
+            display: flex
+        }
+
+        .mobile-menu a {
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            display: block;
+            transition: color .2s
+        }
+
+        .mobile-menu a:hover {
+            color: var(--accent)
+        }
+
+        .mobile-cta {
+            margin-top: 20px;
+            background: var(--accent);
+            color: #000;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: center;
+            border: none;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            width: 100%
+        }
+
+        section {
+            position: relative;
+            z-index: 2
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            padding: 130px 60px 80px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .hero-glow {
+            position: absolute;
+            top: -200px;
+            left: 30%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 700px;
+            background: radial-gradient(ellipse at center, rgba(79, 255, 176, .07) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .hero-glow2 {
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(ellipse at center, rgba(123, 108, 255, .06) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .hero-left {
+            display: flex;
+            flex-direction: column
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(79, 255, 176, .07);
+            border: 1px solid rgba(79, 255, 176, .2);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 36px;
+            width: fit-content;
+            animation: fadeUp .8s ease both
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(.8)
+            }
+        }
+
+        .hero h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(46px, 5vw, 82px);
+            line-height: .95;
+            letter-spacing: -.03em;
+            animation: fadeUp .8s ease .1s both
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--accent)
+        }
+
+        .hero-sub {
+            margin-top: 28px;
+            font-size: 17px;
+            color: var(--text2);
+            max-width: 480px;
+            line-height: 1.65;
+            font-weight: 300;
+            animation: fadeUp .8s ease .2s both
+        }
+
+        .hero-actions {
+            margin-top: 40px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+            animation: fadeUp .8s ease .3s both
+        }
+
+        .btn-hero {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            transition: all .2s
+        }
+
+        .btn-hero:hover {
+            background: #6fffbf;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(79, 255, 176, .2)
+        }
+
+        .btn-hero-ghost {
+            background: none;
+            color: var(--text2);
+            border: 1px solid var(--border2);
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            transition: all .2s
+        }
+
+        .btn-hero-ghost:hover {
+            border-color: var(--text2);
+            color: var(--text)
+        }
+
+        .hero-stats {
+            margin-top: 52px;
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            animation: fadeUp .8s ease .4s both
+        }
+
+        .stat-num {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            letter-spacing: -.03em
+        }
+
+        .stat-num span {
+            color: var(--accent)
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text3);
+            margin-top: 3px;
+            letter-spacing: .02em
+        }
+
+        .hero-right {
+            animation: fadeUp .8s ease .3s both
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* DASHBOARD */
+        .hero-dashboard {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, .5), 0 0 0 1px rgba(79, 255, 176, .04)
+        }
+
+        .dash-header {
+            background: var(--surface);
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .dash-dots {
+            display: flex;
+            gap: 5px
+        }
+
+        .dash-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%
+        }
+
+        .dash-dot:nth-child(1) {
+            background: #ff4f6a
+        }
+
+        .dash-dot:nth-child(2) {
+            background: var(--gold)
+        }
+
+        .dash-dot:nth-child(3) {
+            background: var(--accent)
+        }
+
+        .dash-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: .06em
+        }
+
+        .dash-live {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--accent)
+        }
+
+        .dash-live::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite
+        }
+
+        .dash-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .dash-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px
+        }
+
+        .dash-metric {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px
+        }
+
+        .dm-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            color: var(--text3);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 6px
+        }
+
+        .dm-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            letter-spacing: -.02em
+        }
+
+        .dm-value.up {
+            color: var(--accent)
+        }
+
+        .dm-value.dn {
+            color: var(--red)
+        }
+
+        .dm-delta {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            margin-top: 3px
+        }
+
+        .dm-delta.up {
+            color: var(--accent)
+        }
+
+        .dm-delta.dn {
+            color: var(--red)
+        }
+
+        .mini-sheet {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden
+        }
+
+        .mini-formula-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .mini-cell-ref {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            background: rgba(79, 255, 176, .08);
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(79, 255, 176, .15)
+        }
+
+        .mini-formula {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text2);
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis
+        }
+
+        .mini-formula .fn {
+            color: var(--accent2)
+        }
+
+        .mini-formula .num {
+            color: var(--accent)
+        }
+
+        .mini-ai-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            background: rgba(123, 108, 255, .15);
+            color: var(--accent3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid rgba(123, 108, 255, .25);
+            white-space: nowrap
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: 32px repeat(4, 1fr);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px
+        }
+
+        .mg-hdr {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 5px;
+            text-align: center;
+            color: var(--text3);
+            font-size: 9px;
+            letter-spacing: .05em
+        }
+
+        .mg-rn {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 5px;
+            text-align: center;
+            color: var(--text3);
+            font-size: 9px
+        }
+
+        .mg-c {
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 5px 8px;
+            color: var(--text2);
+            overflow: hidden;
+            white-space: nowrap
+        }
+
+        .mg-c.hdr {
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 500
+        }
+
+        .mg-c.pos {
+            color: var(--accent)
+        }
+
+        .mg-c.neg {
+            color: var(--red)
+        }
+
+        .mg-c.fml {
+            color: var(--accent2)
+        }
+
+        .mg-c.act {
+            background: rgba(79, 255, 176, .05);
+            border: 1px solid var(--accent);
+            color: var(--accent)
+        }
+
+        .dash-audit {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden
+        }
+
+        .da-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .da-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            color: var(--text3);
+            letter-spacing: .08em
+        }
+
+        .da-live {
+            font-family: 'DM Mono', monospace;
+            font-size: 9px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .da-live::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite
+        }
+
+        .da-row {
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 58px 70px 1fr 56px;
+            gap: 8px;
+            align-items: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 9px
+        }
+
+        .da-row:last-child {
+            border-bottom: none
+        }
+
+        .da-time {
+            color: var(--text3)
+        }
+
+        .da-user {
+            color: var(--accent2)
+        }
+
+        .da-change {
+            color: var(--text2);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis
+        }
+
+        .da-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            letter-spacing: .04em;
+            text-align: center
+        }
+
+        .da-badge.f {
+            background: rgba(0, 212, 255, .1);
+            color: var(--accent2);
+            border: 1px solid rgba(0, 212, 255, .15)
+        }
+
+        .da-badge.v {
+            background: rgba(79, 255, 176, .1);
+            color: var(--accent);
+            border: 1px solid rgba(79, 255, 176, .15)
+        }
+
+        .da-badge.a {
+            background: rgba(123, 108, 255, .1);
+            color: var(--accent3);
+            border: 1px solid rgba(123, 108, 255, .2)
+        }
+
+        /* TRUST BAR */
+        .trust-bar {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 2
+        }
+
+        .trust-track {
+            display: flex;
+            gap: 60px;
+            animation: ticker 25s linear infinite;
+            white-space: nowrap
+        }
+
+        .trust-track:hover {
+            animation-play-state: paused
+        }
+
+        .trust-item-t {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--text3);
+            letter-spacing: .08em;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .trust-item-t::before {
+            content: '◆';
+            color: var(--accent);
+            font-size: 8px
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(0)
+            }
+
+            100% {
+                transform: translateX(-50%)
+            }
+        }
+
+        /* COMMONS */
+        .section-divider {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border2), transparent);
+            margin: 0 60px
+        }
+
+        .section-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: .15em;
+            text-transform: uppercase;
+            margin-bottom: 20px
+        }
+
+        .section-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(36px, 4vw, 54px);
+            letter-spacing: -.03em;
+            line-height: 1.05;
+            max-width: 700px
+        }
+
+        .section-title em {
+            font-style: italic;
+            color: var(--red)
+        }
+
+        /* PROBLEMS */
+        .problems {
+            padding: 100px 60px
+        }
+
+        .problems-grid {
+            margin-top: 56px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .problem-card {
+            background: var(--bg2);
+            padding: 36px;
+            transition: background .3s
+        }
+
+        .problem-card:hover {
+            background: var(--bg3)
+        }
+
+        .problem-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 18px
+        }
+
+        .problem-icon.red {
+            background: rgba(255, 79, 106, .1);
+            border: 1px solid rgba(255, 79, 106, .2)
+        }
+
+        .problem-icon.yellow {
+            background: rgba(245, 200, 66, .1);
+            border: 1px solid rgba(245, 200, 66, .2)
+        }
+
+        .problem-icon.blue {
+            background: rgba(0, 212, 255, .1);
+            border: 1px solid rgba(0, 212, 255, .2)
+        }
+
+        .problem-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -.01em
+        }
+
+        .problem-card p {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.65;
+            font-weight: 300
+        }
+
+        .problem-stat {
+            margin-top: 18px;
+            font-family: 'DM Mono', monospace;
+            font-size: 22px;
+            color: var(--red);
+            font-weight: 300
+        }
+
+        .problem-stat small {
+            font-size: 11px;
+            color: var(--text3);
+            display: block;
+            margin-top: 2px;
+            letter-spacing: .03em
+        }
+
+        /* FEATURES */
+        .features {
+            padding: 100px 60px;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .features-intro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: end;
+            margin-bottom: 64px
+        }
+
+        .features-intro p {
+            color: var(--text2);
+            font-size: 16px;
+            line-height: 1.7;
+            font-weight: 300;
+            margin-top: auto
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .feature-item {
+            background: var(--bg);
+            padding: 36px;
+            display: flex;
+            gap: 20px;
+            transition: background .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity .3s
+        }
+
+        .feature-item:hover {
+            background: var(--bg3)
+        }
+
+        .feature-item:hover::before {
+            opacity: 1
+        }
+
+        .feature-number {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: .1em;
+            margin-top: 3px;
+            min-width: 28px
+        }
+
+        .feature-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -.01em
+        }
+
+        .feature-content p {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.65;
+            font-weight: 300
+        }
+
+        .feature-tag {
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: .06em
+        }
+
+        .feature-tag::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%
+        }
+
+        /* AI */
+        .ai-section {
+            padding: 100px 60px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .ai-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 500px;
+            background: radial-gradient(ellipse, rgba(123, 108, 255, .08) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center
+        }
+
+        .ai-visual {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .ai-visual-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface2)
+        }
+
+        .ai-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--accent3);
+            letter-spacing: .08em
+        }
+
+        .ai-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent3);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite
+        }
+
+        .chat-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .chat-bubble {
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+            max-width: 85%
+        }
+
+        .chat-bubble.user {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            margin-left: auto;
+            border-radius: 10px 10px 2px 10px
+        }
+
+        .chat-bubble.ai {
+            background: rgba(123, 108, 255, .1);
+            border: 1px solid rgba(123, 108, 255, .2);
+            color: var(--text);
+            border-radius: 10px 10px 10px 2px
+        }
+
+        .chat-formula {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            background: rgba(0, 0, 0, .3);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 9px 12px;
+            margin-top: 8px;
+            color: var(--accent2)
+        }
+
+        .chat-formula span {
+            color: var(--accent)
+        }
+
+        .ai-capabilities {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            margin-top: 36px
+        }
+
+        .ai-cap {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start
+        }
+
+        .ai-cap-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(123, 108, 255, .1);
+            border: 1px solid rgba(123, 108, 255, .2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-top: 2px
+        }
+
+        .ai-cap h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: -.01em
+        }
+
+        .ai-cap p {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.6;
+            font-weight: 300
+        }
+
+        /* COMPLIANCE */
+        .compliance {
+            padding: 100px 60px;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .compliance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 80px;
+            align-items: start;
+            margin-top: 56px
+        }
+
+        .compliance-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0
+        }
+
+        .compliance-item {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .compliance-item:first-child {
+            border-top: 1px solid var(--border)
+        }
+
+        .compliance-check {
+            width: 24px;
+            height: 24px;
+            background: rgba(79, 255, 176, .1);
+            border: 1px solid rgba(79, 255, 176, .3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 2px
+        }
+
+        .compliance-item h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px
+        }
+
+        .compliance-item p {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.6;
+            font-weight: 300
+        }
+
+        .audit-log {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px
+        }
+
+        .audit-log-header {
+            background: var(--surface);
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .audit-log-title {
+            color: var(--text2);
+            font-size: 11px;
+            letter-spacing: .08em
+        }
+
+        .audit-log-live {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            font-size: 10px
+        }
+
+        .audit-log-live::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite
+        }
+
+        .audit-entry {
+            padding: 11px 18px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 72px 80px 72px 1fr 70px;
+            gap: 10px;
+            align-items: center;
+            transition: background .2s
+        }
+
+        .audit-entry:hover {
+            background: var(--surface)
+        }
+
+        .audit-entry:last-child {
+            border-bottom: none
+        }
+
+        .audit-time {
+            color: var(--text3)
+        }
+
+        .audit-user {
+            color: var(--accent2)
+        }
+
+        .audit-cell {
+            color: var(--gold)
+        }
+
+        .audit-change {
+            color: var(--text2);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis
+        }
+
+        .audit-type {
+            padding: 3px 7px;
+            border-radius: 3px;
+            font-size: 9px;
+            letter-spacing: .05em;
+            text-align: center
+        }
+
+        .audit-type.formula {
+            background: rgba(0, 212, 255, .1);
+            color: var(--accent2);
+            border: 1px solid rgba(0, 212, 255, .15)
+        }
+
+        .audit-type.value {
+            background: rgba(79, 255, 176, .1);
+            color: var(--accent);
+            border: 1px solid rgba(79, 255, 176, .15)
+        }
+
+        .audit-type.delete {
+            background: rgba(255, 79, 106, .1);
+            color: var(--red);
+            border: 1px solid rgba(255, 79, 106, .15)
+        }
+
+        /* ROADMAP */
+        .roadmap {
+            padding: 100px 60px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .roadmap-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(79, 255, 176, .04) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .roadmap-intro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: end;
+            margin-bottom: 64px
+        }
+
+        .roadmap-intro p {
+            color: var(--text2);
+            font-size: 16px;
+            line-height: 1.7;
+            font-weight: 300;
+            margin-top: auto
+        }
+
+        .roadmap-timeline {
+            position: relative
+        }
+
+        .roadmap-line {
+            position: absolute;
+            left: 119px;
+            top: 20px;
+            bottom: 20px;
+            width: 1px;
+            background: linear-gradient(to bottom, var(--accent), var(--accent3), transparent);
+            opacity: .3
+        }
+
+        .roadmap-phase {
+            display: grid;
+            grid-template-columns: 120px 40px 1fr;
+            gap: 0 20px;
+            align-items: start;
+            margin-bottom: 40px
+        }
+
+        .roadmap-phase:last-child {
+            margin-bottom: 0
+        }
+
+        .rp-label {
+            text-align: right;
+            padding-top: 14px
+        }
+
+        .rp-phase-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            display: block
+        }
+
+        .rp-phase-tag.active {
+            color: var(--accent)
+        }
+
+        .rp-phase-tag.upcoming {
+            color: var(--text3)
+        }
+
+        .rp-phase-tag.future {
+            color: var(--accent3)
+        }
+
+        .rp-months {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text3);
+            display: block;
+            margin-top: 3px
+        }
+
+        .rp-dot-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 16px
+        }
+
+        .rp-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        .rp-dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(79, 255, 176, .5)
+        }
+
+        .rp-dot.upcoming {
+            background: var(--border2);
+            border: 2px solid var(--border2)
+        }
+
+        .rp-dot.future {
+            background: transparent;
+            border: 2px solid var(--accent3)
+        }
+
+        .rp-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 28px;
+            transition: border-color .3s
+        }
+
+        .rp-content:hover {
+            border-color: var(--border2)
+        }
+
+        .rp-content.active-card {
+            border-color: rgba(79, 255, 176, .25);
+            background: rgba(79, 255, 176, .02)
+        }
+
+        .rp-content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .rp-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -.01em
+        }
+
+        .rp-status {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            letter-spacing: .06em;
+            white-space: nowrap
+        }
+
+        .rp-status.in-progress {
+            background: rgba(79, 255, 176, .1);
+            color: var(--accent);
+            border: 1px solid rgba(79, 255, 176, .2)
+        }
+
+        .rp-status.planned {
+            background: rgba(79, 79, 79, .15);
+            color: var(--text3);
+            border: 1px solid var(--border)
+        }
+
+        .rp-status.future-s {
+            background: rgba(123, 108, 255, .1);
+            color: var(--accent3);
+            border: 1px solid rgba(123, 108, 255, .2)
+        }
+
+        .rp-desc {
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.6;
+            font-weight: 300;
+            margin-bottom: 18px
+        }
+
+        .rp-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .rp-chip {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            letter-spacing: .04em
+        }
+
+        .rp-chip.done {
+            background: rgba(79, 255, 176, .08);
+            color: var(--accent);
+            border: 1px solid rgba(79, 255, 176, .15)
+        }
+
+        .rp-chip.wip {
+            background: rgba(245, 200, 66, .08);
+            color: var(--gold);
+            border: 1px solid rgba(245, 200, 66, .15)
+        }
+
+        .rp-chip.todo {
+            background: var(--bg3);
+            color: var(--text3);
+            border: 1px solid var(--border)
+        }
+
+        /* INTEGRATIONS */
+        .integrations {
+            padding: 100px 60px
+        }
+
+        .int-grid {
+            margin-top: 56px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px
+        }
+
+        .int-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px;
+            transition: all .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .int-card::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            right: -40px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--glow-color, rgba(79, 255, 176, .15)) 0%, transparent 70%);
+            transition: all .3s;
+            opacity: 0
+        }
+
+        .int-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-4px);
+            background: var(--surface2)
+        }
+
+        .int-card:hover::after {
+            opacity: 1;
+            bottom: -20px;
+            right: -20px
+        }
+
+        .int-logo {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: .02em
+        }
+
+        .int-card p {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.6;
+            font-weight: 300
+        }
+
+        .int-tag {
+            margin-top: 14px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            letter-spacing: .05em
+        }
+
+        .int-tag.live {
+            background: rgba(79, 255, 176, .1);
+            color: var(--accent);
+            border: 1px solid rgba(79, 255, 176, .2)
+        }
+
+        .int-tag.soon {
+            background: rgba(79, 79, 79, .2);
+            color: var(--text3);
+            border: 1px solid var(--border)
+        }
+
+        /* PRICING */
+        .pricing {
+            padding: 100px 60px;
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .pricing-grid {
+            margin-top: 56px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px
+        }
+
+        .pricing-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 36px;
+            position: relative;
+            transition: transform .3s
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px)
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent);
+            background: rgba(79, 255, 176, .03)
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: #000;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            padding: 4px 16px;
+            border-radius: 100px
+        }
+
+        .pricing-tier {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: 14px
+        }
+
+        .pricing-price {
+            font-family: 'DM Serif Display', serif;
+            font-size: 44px;
+            letter-spacing: -.03em;
+            margin-bottom: 4px
+        }
+
+        .pricing-period {
+            font-size: 13px;
+            color: var(--text3);
+            margin-bottom: 24px
+        }
+
+        .pricing-desc {
+            font-size: 14px;
+            color: var(--text2);
+            line-height: 1.6;
+            margin-bottom: 28px;
+            font-weight: 300
+        }
+
+        .pricing-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-bottom: 32px
+        }
+
+        .pricing-features li {
+            font-size: 13px;
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--accent);
+            font-size: 12px;
+            width: 16px;
+            flex-shrink: 0
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Instrument Sans', sans-serif;
+            cursor: none;
+            transition: all .2s
+        }
+
+        .pricing-btn.outline {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--text2)
+        }
+
+        .pricing-btn.outline:hover {
+            border-color: var(--text2);
+            color: var(--text)
+        }
+
+        .pricing-btn.filled {
+            background: var(--accent);
+            border: none;
+            color: #000
+        }
+
+        .pricing-btn.filled:hover {
+            background: #6fffbf
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 140px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden
+        }
+
+        .cta-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(79, 255, 176, .06) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .cta-section h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(44px, 6vw, 76px);
+            letter-spacing: -.03em;
+            line-height: 1;
+            max-width: 800px;
+            margin: 0 auto 24px
+        }
+
+        .cta-section h2 em {
+            font-style: italic;
+            color: var(--accent)
+        }
+
+        .cta-section p {
+            font-size: 17px;
+            color: var(--text2);
+            margin-bottom: 44px;
+            font-weight: 300
+        }
+
+        .cta-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 44px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px
+        }
+
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .footer-tagline {
+            font-size: 13px;
+            color: var(--text3);
+            font-family: 'DM Mono', monospace;
+            letter-spacing: .03em
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+            flex-wrap: wrap
+        }
+
+        .footer-links a {
+            font-size: 13px;
+            color: var(--text3);
+            text-decoration: none;
+            transition: color .2s
+        }
+
+        .footer-links a:hover {
+            color: var(--text2)
+        }
+
+        /* REVEAL */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity .8s ease, transform .8s ease
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        .reveal-delay-1 {
+            transition-delay: .1s
+        }
+
+        .reveal-delay-2 {
+            transition-delay: .2s
+        }
+
+        .reveal-delay-3 {
+            transition-delay: .3s
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text3)
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width:1100px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 110px 40px 60px;
+                gap: 48px;
+                min-height: auto
+            }
+
+            .hero h1 {
+                font-size: clamp(42px, 8vw, 72px)
+            }
+
+            .features-intro,
+            .ai-grid,
+            .compliance-grid,
+            .roadmap-intro {
+                grid-template-columns: 1fr;
+                gap: 40px
+            }
+
+            .features-intro p,
+            .roadmap-intro p {
+                margin-top: 0
+            }
+
+            .problems-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .int-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 440px;
+                margin-left: auto;
+                margin-right: auto
+            }
+
+            .audit-entry {
+                grid-template-columns: 62px 68px 1fr 62px
+            }
+
+            .audit-cell {
+                display: none
+            }
+
+            .roadmap-line {
+                left: 99px
+            }
+
+            .roadmap-phase {
+                grid-template-columns: 100px 36px 1fr
+            }
+        }
+
+        @media (max-width:768px) {
+            nav {
+                padding: 16px 24px
+            }
+
+            .nav-links,
+            .nav-cta {
+                display: none
+            }
+
+            .hamburger {
+                display: flex
+            }
+
+            .hero {
+                padding: 88px 20px 48px;
+                gap: 36px
+            }
+
+            .hero h1 {
+                font-size: clamp(36px, 9vw, 56px)
+            }
+
+            .hero-sub {
+                font-size: 15px
+            }
+
+            .hero-stats {
+                gap: 24px
+            }
+
+            .stat-num {
+                font-size: 26px
+            }
+
+            .problems,
+            .features,
+            .ai-section,
+            .compliance,
+            .roadmap,
+            .integrations,
+            .pricing,
+            .cta-section {
+                padding: 64px 20px
+            }
+
+            .section-divider {
+                margin: 0 20px
+            }
+
+            .problems-grid {
+                grid-template-columns: 1fr
+            }
+
+            .features-list {
+                grid-template-columns: 1fr
+            }
+
+            .int-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px
+            }
+
+            .roadmap-line {
+                left: 79px
+            }
+
+            .roadmap-phase {
+                grid-template-columns: 80px 28px 1fr;
+                gap: 0 10px
+            }
+
+            .rp-phase-tag {
+                font-size: 9px
+            }
+
+            .rp-months {
+                font-size: 9px
+            }
+
+            .rp-content {
+                padding: 18px 20px
+            }
+
+            .audit-entry {
+                grid-template-columns: 1fr 1fr;
+                font-size: 10px;
+                padding: 10px 14px
+            }
+
+            .audit-time,
+            .audit-user,
+            .audit-cell {
+                display: none
+            }
+
+            .cta-section {
+                padding: 96px 20px
+            }
+
+            .cta-actions {
+                flex-direction: column;
+                align-items: center
+            }
+
+            .btn-hero,
+            .btn-hero-ghost {
+                width: 100%;
+                max-width: 320px;
+                text-align: center;
+                justify-content: center;
+                display: block
+            }
+
+            footer {
+                padding: 32px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px
+            }
+
+            .footer-links {
+                gap: 14px
+            }
+
+            .dash-metrics {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .dm-value {
+                font-size: 16px
+            }
+
+            .hero-dashboard .dash-title {
+                display: none
+            }
+        }
+
+        @media (max-width:480px) {
+            .int-grid {
+                grid-template-columns: 1fr
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 16px
+            }
+
+            .dash-metrics {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .dash-metrics .dash-metric:last-child {
+                grid-column: span 2
+            }
+
+            .rp-content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px
+            }
+
+            .mini-formula .fn,
+            .mini-formula .num,
+            .mini-ai-tag {
+                font-size: 9px
+            }
+        }
     </style>
 </head>
 
@@ -23,93 +2163,693 @@
     <div class="grid-bg"></div>
     <div class="noise"></div>
 
-    <!-- NAVBAR -->
     <nav>
         <a href="#" class="logo">
             <div class="logo-mark"><span></span><span></span><span></span><span></span></div>
             Grydx
         </a>
-
-        <!-- ✅ UPDATED -->
         <ul class="nav-links">
-            <li><a href="demo.html">Demo</a></li>
             <li><a href="#features">Features</a></li>
             <li><a href="#ai">AI Engine</a></li>
             <li><a href="#compliance">Compliance</a></li>
             <li><a href="#roadmap">Roadmap</a></li>
             <li><a href="#pricing">Pricing</a></li>
         </ul>
-
         <div class="nav-cta">
-            <button class="btn-primary" onclick="window.location.href='contact.html'">
-                Request Access →
-            </button>
+            <button class="btn-primary" onclick="window.location.href='contact.html'">Request Access &rarr;</button>
         </div>
-
-        <button class="hamburger" onclick="toggleMenu()">
+        <button class="hamburger" id="hamburger" onclick="toggleMenu()">
             <span></span><span></span><span></span>
         </button>
     </nav>
 
-    <!-- MOBILE MENU -->
     <div class="mobile-menu" id="mobileMenu">
-        <!-- ✅ UPDATED -->
-        <a href="demo.html" onclick="closeMenu()">Demo</a>
         <a href="#features" onclick="closeMenu()">Features</a>
         <a href="#ai" onclick="closeMenu()">AI Engine</a>
         <a href="#compliance" onclick="closeMenu()">Compliance</a>
         <a href="#roadmap" onclick="closeMenu()">Roadmap</a>
         <a href="#pricing" onclick="closeMenu()">Pricing</a>
-
-        <button class="mobile-cta" onclick="window.location.href='contact.html'">
-            Request Access →
-        </button>
+        <button class="mobile-cta" onclick="window.location.href='contact.html'">Request Access &rarr;</button>
     </div>
 
     <!-- HERO -->
     <section class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-glow2"></div>
         <div class="hero-left">
-
+            <div class="hero-badge">Now in Private Beta</div>
             <h1>The spreadsheet<br><em>finance deserves.</em></h1>
-
-            <!-- ✅ UPDATED -->
+            <p class="hero-sub">Enterprise-grade spreadsheet software built for investment banking, private equity, and
+                high finance. The familiarity of Excel, the compliance of enterprise software, powered by AI.</p>
             <div class="hero-actions">
-                <button class="btn-hero" onclick="window.location.href='demo.html'">
-                    Try Demo →
-                </button>
-
-                <button class="btn-hero-ghost" onclick="window.location.href='demo.html'">
-                    Watch Demo
-                </button>
+                <button class="btn-hero" onclick="window.location.href='contact.html'">Request Early Access
+                    &rarr;</button>
+                <button class="btn-hero-ghost">Watch Demo</button>
             </div>
-
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num"><span>80%+</span></div>
+                    <div class="stat-label">Excel sheets contain errors</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">$<span>5B</span></div>
+                    <div class="stat-label">Annual spreadsheet losses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">$<span>50B</span></div>
+                    <div class="stat-label">Total addressable market</div>
+                </div>
+            </div>
         </div>
-
-        <!-- (rest of your hero dashboard stays EXACTLY same) -->
+        <div class="hero-right">
+            <div class="hero-dashboard">
+                <div class="dash-header">
+                    <div class="dash-dots">
+                        <div class="dash-dot"></div>
+                        <div class="dash-dot"></div>
+                        <div class="dash-dot"></div>
+                    </div>
+                    <div class="dash-title">LBO MODEL &mdash; ACME CORP v3.2</div>
+                    <div class="dash-live">Live</div>
+                </div>
+                <div class="dash-body">
+                    <div class="dash-metrics">
+                        <div class="dash-metric">
+                            <div class="dm-label">IRR</div>
+                            <div class="dm-value up">22.4%</div>
+                            <div class="dm-delta up">&uarr; +1.2pp vs base</div>
+                        </div>
+                        <div class="dash-metric">
+                            <div class="dm-label">MOIC</div>
+                            <div class="dm-value up">3.1x</div>
+                            <div class="dm-delta up">&uarr; Target 3.0x</div>
+                        </div>
+                        <div class="dash-metric">
+                            <div class="dm-label">Net Debt</div>
+                            <div class="dm-value dn">$548M</div>
+                            <div class="dm-delta dn">&darr; Year 5</div>
+                        </div>
+                    </div>
+                    <div class="mini-sheet">
+                        <div class="mini-formula-bar">
+                            <div class="mini-cell-ref">E6</div>
+                            <div class="mini-formula">= <span class="fn">IRR</span>(<span class="num">C8:C15</span>,
+                                0.1) * <span class="fn">XNPV</span>(<span class="num">E4</span>, <span
+                                    class="num">D8:D15</span>)</div>
+                            <div class="mini-ai-tag">&#10022; AI</div>
+                        </div>
+                        <div class="mini-grid">
+                            <div class="mg-hdr"></div>
+                            <div class="mg-hdr">A</div>
+                            <div class="mg-hdr">B</div>
+                            <div class="mg-hdr">C</div>
+                            <div class="mg-hdr">D</div>
+                            <div class="mg-rn">1</div>
+                            <div class="mg-c hdr">Metric</div>
+                            <div class="mg-c hdr">FY2023</div>
+                            <div class="mg-c hdr">FY2024</div>
+                            <div class="mg-c hdr">FY2025E</div>
+                            <div class="mg-rn">2</div>
+                            <div class="mg-c">Revenue</div>
+                            <div class="mg-c">$921M</div>
+                            <div class="mg-c">$1,048M</div>
+                            <div class="mg-c pos">$1,202M</div>
+                            <div class="mg-rn">3</div>
+                            <div class="mg-c">EBITDA</div>
+                            <div class="mg-c">$238M</div>
+                            <div class="mg-c">$272M</div>
+                            <div class="mg-c pos">$319M</div>
+                            <div class="mg-rn">4</div>
+                            <div class="mg-c">EV/EBITDA</div>
+                            <div class="mg-c">10.8x</div>
+                            <div class="mg-c">10.4x</div>
+                            <div class="mg-c act">9.8x</div>
+                            <div class="mg-rn">5</div>
+                            <div class="mg-c">Net Debt</div>
+                            <div class="mg-c">$1,088M</div>
+                            <div class="mg-c neg">$920M</div>
+                            <div class="mg-c fml">=C5*0.85</div>
+                        </div>
+                    </div>
+                    <div class="dash-audit">
+                        <div class="da-header"><span class="da-title">AUDIT LOG &middot; LIVE</span><span
+                                class="da-live">Recording</span></div>
+                        <div class="da-row"><span class="da-time">14:38:21</span><span
+                                class="da-user">j.anderson</span><span class="da-change">E6 &rarr; IRR formula
+                                updated</span><span class="da-badge f">FORMULA</span></div>
+                        <div class="da-row"><span class="da-time">14:37:05</span><span
+                                class="da-user">m.chen</span><span class="da-change">Bloomberg refresh &middot; AAPL
+                                FY2024</span><span class="da-badge v">DATA</span></div>
+                        <div class="da-row"><span class="da-time">14:35:12</span><span class="da-user">s.kim</span><span
+                                class="da-change">v3.1 &rarr; v3.2 approved</span><span
+                                class="da-badge a">APPROVED</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <!-- EVERYTHING ELSE (features, AI, compliance, roadmap, integrations, pricing) -->
-    <!-- ✅ COMPLETELY UNCHANGED FROM YOUR FILE -->
+    <!-- TRUST TICKER -->
+    <div class="trust-bar">
+        <div class="trust-track">
+            <span class="trust-item-t">SOX Compliant Audit Trails</span>
+            <span class="trust-item-t">Bloomberg Terminal Integration</span>
+            <span class="trust-item-t">Real-Time Collaboration</span>
+            <span class="trust-item-t">SEC Edgar Direct Access</span>
+            <span class="trust-item-t">AI Formula Generation</span>
+            <span class="trust-item-t">Role-Based Access Control</span>
+            <span class="trust-item-t">99.9% Uptime SLA</span>
+            <span class="trust-item-t">SAML / SSO / Active Directory</span>
+            <span class="trust-item-t">SOX Compliant Audit Trails</span>
+            <span class="trust-item-t">Bloomberg Terminal Integration</span>
+            <span class="trust-item-t">Real-Time Collaboration</span>
+            <span class="trust-item-t">SEC Edgar Direct Access</span>
+            <span class="trust-item-t">AI Formula Generation</span>
+            <span class="trust-item-t">Role-Based Access Control</span>
+            <span class="trust-item-t">99.9% Uptime SLA</span>
+            <span class="trust-item-t">SAML / SSO / Active Directory</span>
+        </div>
+    </div>
+
+    <!-- PROBLEMS -->
+    <section class="problems" id="problems">
+        <div class="section-label">The Problem</div>
+        <h2 class="section-title">Excel is <em>costing you</em> more than you think.</h2>
+        <div class="problems-grid reveal">
+            <div class="problem-card">
+                <div class="problem-icon red">&#9888;</div>
+                <h3>No Audit Trails</h3>
+                <p>SEC, Federal Reserve, and OCC mandates require comprehensive audit trails. Excel offers none.
+                    Institutions resort to email backups and manual version control.</p>
+                <div class="problem-stat">$100M+<small>Potential regulatory penalty per audit failure</small></div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon yellow">&#9889;</div>
+                <h3>Catastrophic Error Rates</h3>
+                <p>Over 80% of enterprise spreadsheets contain material errors. JPMorgan's London Whale trading loss
+                    &mdash; $6B &mdash; was partly attributed to a spreadsheet mistake.</p>
+                <div class="problem-stat">$5B<small>Annual financial losses from spreadsheet errors</small></div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon blue">&#8987;</div>
+                <h3>Performance Bottlenecks</h3>
+                <p>Financial models exceeding 100,000 rows become sluggish in Excel. Pivot recalculations on large
+                    datasets can take 5&ndash;10 minutes, burning analyst hours.</p>
+                <div class="problem-stat">10M+<small>Cells Grydx handles without degradation</small></div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon red">&#128274;</div>
+                <h3>Deficient Data Governance</h3>
+                <p>Excel lacks role-based access controls, data lineage tracking, and formula validation. Any analyst
+                    can view or alter sensitive financial models.</p>
+                <div class="problem-stat">0<small>Native governance features in Excel</small></div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon yellow">&#128225;</div>
+                <h3>Data Isolation</h3>
+                <p>Bloomberg, Reuters, SEC Edgar, and internal systems require manual exports. Stale data and brittle
+                    VBA macros increase risk across every workflow.</p>
+                <div class="problem-stat">6+ hrs<small>Average analyst time wasted on manual data entry weekly</small>
+                </div>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon blue">&#128101;</div>
+                <h3>Collaboration Chaos</h3>
+                <p>File-based workflows mean emailing versions back and forth. No visibility into what changed, who
+                    changed it, or which version is authoritative.</p>
+                <div class="problem-stat">50+<small>Concurrent users supported on Grydx</small></div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+        <div class="features-intro reveal">
+            <div>
+                <div class="section-label">Core Platform</div>
+                <h2 class="section-title">Looks like Excel.<br>Built for the real world.</h2>
+            </div>
+            <p>Every feature in Grydx was designed around how investment bankers, PE analysts, and treasury teams
+                actually work &mdash; not retrofitted from a generic SaaS product.</p>
+        </div>
+        <div class="features-list reveal reveal-delay-1">
+            <div class="feature-item">
+                <div class="feature-number">01</div>
+                <div class="feature-content">
+                    <h3>Real-Time Collaboration</h3>
+                    <p>Multiple analysts editing the same model simultaneously. See exactly who is in each cell. Changes
+                        sync in under 500ms.</p>
+                    <div class="feature-tag">CRDT-powered &middot; 50+ concurrent users</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">02</div>
+                <div class="feature-content">
+                    <h3>Immutable Audit Logs</h3>
+                    <p>Every keystroke logged with user identity, timestamp, and cell reference. SOX-compliant.
+                        Exportable for SEC and Fed audits.</p>
+                    <div class="feature-tag">SOX &middot; SEC-ready &middot; Tamper-proof</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">03</div>
+                <div class="feature-content">
+                    <h3>Excel Fidelity Import</h3>
+                    <p>Import any .xlsx file with formula integrity preserved &mdash; VLOOKUP, IRR, NPV, SUMIF, array
+                        formulas. 98%+ import success rate.</p>
+                    <div class="feature-tag">98%+ formula accuracy</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">04</div>
+                <div class="feature-content">
+                    <h3>Role-Based Access Control</h3>
+                    <p>Column-level and cell-level permissions. Data masking for regulated information. Director
+                        approval workflows before model sharing.</p>
+                    <div class="feature-tag">Cell-level &middot; Column-level &middot; Data masking</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">05</div>
+                <div class="feature-content">
+                    <h3>One-Click Financial Models</h3>
+                    <p>Instantiate complete LBO, DCF, M&amp;A accretion/dilution, and risk dashboard templates &mdash;
+                        pre-built with industry-standard logic.</p>
+                    <div class="feature-tag">LBO &middot; DCF &middot; M&amp;A &middot; Risk &middot; Waterfall</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-number">06</div>
+                <div class="feature-content">
+                    <h3>Change Approval Workflows</h3>
+                    <p>Route model changes through hierarchical approval chains. Directors approve analyst edits before
+                        they take effect in live models.</p>
+                    <div class="feature-tag">Multi-level approval &middot; Notifications</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- AI -->
+    <section class="ai-section" id="ai">
+        <div class="ai-glow"></div>
+        <div class="ai-grid">
+            <div>
+                <div class="section-label">AI Engine</div>
+                <h2 class="section-title reveal" style="max-width:100%">Intelligence built for finance.</h2>
+                <p style="margin-top:20px;color:var(--text2);line-height:1.7;font-size:16px;font-weight:300;"
+                    class="reveal reveal-delay-1">Our AI understands financial context. Describe what you need in plain
+                    English &mdash; it writes the formula, flags the errors, and populates the data automatically.</p>
+                <div class="ai-capabilities reveal reveal-delay-2">
+                    <div class="ai-cap">
+                        <div class="ai-cap-icon">&#10022;</div>
+                        <div>
+                            <h4>Auto-Formula Generation</h4>
+                            <p>Type "calculate IRR on projected cash flows" and get the exact formula. Understands LBO
+                                logic, DCF conventions, and debt schedules.</p>
+                        </div>
+                    </div>
+                    <div class="ai-cap">
+                        <div class="ai-cap-icon">&#9889;</div>
+                        <div>
+                            <h4>Real-Time Error Detection</h4>
+                            <p>AI flags circular references, dimensional mismatches, and statistical outliers before
+                                they become multi-million dollar mistakes.</p>
+                        </div>
+                    </div>
+                    <div class="ai-cap">
+                        <div class="ai-cap-icon">&#128225;</div>
+                        <div>
+                            <h4>Natural Language Data Pull</h4>
+                            <p>"Populate Q3 2024 revenue for all S&amp;P 500 financials from Bloomberg" &mdash; executed
+                                automatically with live data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal reveal-delay-1">
+                <div class="ai-visual">
+                    <div class="ai-visual-header">
+                        <div class="ai-dot"></div>
+                        <div class="ai-label">GRYDX AI &middot; FINANCIAL ASSISTANT</div>
+                    </div>
+                    <div class="chat-body">
+                        <div class="chat-bubble user">Can you build me an IRR formula for cells C8 through C15 with a
+                            discount rate from E4?</div>
+                        <div class="chat-bubble ai">Of course. Here's the full formula for your LBO exit IRR:<div
+                                class="chat-formula">= <span>IRR</span>(C8:C15, 0.1) * XNPV(E4, D8:D15, B8:B15)</div>
+                            I've also detected that C11 may contain a sign error &mdash; the cash outflow appears
+                            positive. Should I flag it?</div>
+                        <div class="chat-bubble user">Yes, flag it. Also populate Bloomberg revenue for AAPL, MSFT, GS
+                            for FY2024.</div>
+                        <div class="chat-bubble ai">&#10003; C11 flagged and routed to your review queue.<br><br>Pulling
+                            live Bloomberg data for 3 tickers&hellip;<div class="chat-formula">AAPL:
+                                <span>$391.0B</span> &nbsp;|&nbsp; MSFT: <span>$245.1B</span> &nbsp;|&nbsp; GS:
+                                <span>$47.4B</span></div>Inserted in D4:D6. Audit log updated.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- COMPLIANCE -->
+    <section class="compliance" id="compliance">
+        <div class="section-label">Compliance &amp; Governance</div>
+        <h2 class="section-title reveal">Regulatory-grade from<br>day <em style="color:var(--accent)">one.</em></h2>
+        <div class="compliance-grid">
+            <div class="compliance-list reveal reveal-delay-1">
+                <div class="compliance-item">
+                    <div class="compliance-check">&#10003;</div>
+                    <div>
+                        <h4>SOX-Compliant Audit Logs</h4>
+                        <p>Immutable, timestamped records of every change. Who, what, when &mdash; with cryptographic
+                            tamper detection.</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <div class="compliance-check">&#10003;</div>
+                    <div>
+                        <h4>SEC &amp; Fed Export Ready</h4>
+                        <p>One-click export of audit trails in formats accepted by regulators. No more scrambling during
+                            examination windows.</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <div class="compliance-check">&#10003;</div>
+                    <div>
+                        <h4>Data Lineage Tracking</h4>
+                        <p>Trace every cell's value back to its source &mdash; Bloomberg feed, manual entry, formula
+                            derivation, or data import.</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <div class="compliance-check">&#10003;</div>
+                    <div>
+                        <h4>Approval Workflows</h4>
+                        <p>Changes to live models require sign-off from designated approvers before they propagate. Full
+                            workflow history retained.</p>
+                    </div>
+                </div>
+                <div class="compliance-item">
+                    <div class="compliance-check">&#10003;</div>
+                    <div>
+                        <h4>SAML / SSO / Active Directory</h4>
+                        <p>Enterprise identity integration so every access event is tied to your existing authentication
+                            infrastructure.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal reveal-delay-2">
+                <div class="audit-log">
+                    <div class="audit-log-header"><span class="audit-log-title">AUDIT LOG &middot; LBO MODEL v4.2
+                            &middot; LIVE</span><span class="audit-log-live">Recording</span></div>
+                    <div
+                        style="display:grid;grid-template-columns:72px 80px 72px 1fr 70px;gap:10px;padding:8px 18px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.08em;">
+                        <span>TIME</span><span>USER</span><span>CELL</span><span>CHANGE</span><span>TYPE</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:38:21</span><span
+                            class="audit-user">j.anderson</span><span class="audit-cell">E12</span><span
+                            class="audit-change">IRR(C8:C15) &rarr; IRR(C8:C15)*XNPV(E4)</span><span
+                            class="audit-type formula">FORMULA</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:37:05</span><span
+                            class="audit-user">m.chen</span><span class="audit-cell">D8:D15</span><span
+                            class="audit-change">Bloomberg refresh &middot; AAPL FY2024</span><span
+                            class="audit-type value">DATA</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:35:44</span><span
+                            class="audit-user">r.patel</span><span class="audit-cell">C11</span><span
+                            class="audit-change">42.8 &rarr; -42.8 (sign correction)</span><span
+                            class="audit-type value">VALUE</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:34:10</span><span
+                            class="audit-user">j.anderson</span><span class="audit-cell">B3</span><span
+                            class="audit-change">Deleted: "Draft assumptions v2"</span><span
+                            class="audit-type delete">DELETE</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:31:58</span><span
+                            class="audit-user">s.kim</span><span class="audit-cell">F4</span><span
+                            class="audit-change">=E4*1.12 &rarr; =E4*1.18 (growth rate)</span><span
+                            class="audit-type formula">FORMULA</span></div>
+                    <div class="audit-entry"><span class="audit-time">14:28:33</span><span
+                            class="audit-user">m.chen</span><span class="audit-cell">A1</span><span
+                            class="audit-change">APPROVED by M.Chen &middot; v4.1 &rarr; v4.2</span><span
+                            class="audit-type value">APPROVE</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- ROADMAP -->
+    <section class="roadmap" id="roadmap">
+        <div class="roadmap-glow"></div>
+        <div class="roadmap-intro reveal">
+            <div>
+                <div class="section-label">Product Roadmap</div>
+                <h2 class="section-title">Where we're<br><em style="color:var(--accent)">headed.</em></h2>
+            </div>
+            <p>We're moving fast. Here's our 24-month plan to make Grydx the definitive spreadsheet platform for global
+                finance &mdash; from MVP to enterprise scale.</p>
+        </div>
+        <div class="roadmap-timeline reveal reveal-delay-1">
+            <div class="roadmap-line"></div>
+            <div class="roadmap-phase">
+                <div class="rp-label"><span class="rp-phase-tag active">Phase 1</span><span
+                        class="rp-months">M1&ndash;M6</span></div>
+                <div class="rp-dot-col">
+                    <div class="rp-dot active"></div>
+                </div>
+                <div class="rp-content active-card">
+                    <div class="rp-content-header">
+                        <div class="rp-title">MVP &mdash; Spreadsheet + Audit</div>
+                        <div class="rp-status in-progress">In Progress</div>
+                    </div>
+                    <p class="rp-desc">Building the core cloud-native spreadsheet with real-time collaboration, basic
+                        audit trails, Bloomberg integration, and AI formula suggestions. Getting our first 3&ndash;5
+                        bank pilots live.</p>
+                    <div class="rp-items">
+                        <span class="rp-chip done">&#10003; Cloud spreadsheet editor</span>
+                        <span class="rp-chip done">&#10003; Excel import/export</span>
+                        <span class="rp-chip done">&#10003; Real-time collab</span>
+                        <span class="rp-chip wip">&#8635; Basic audit trail</span>
+                        <span class="rp-chip wip">&#8635; Bloomberg integration</span>
+                        <span class="rp-chip wip">&#8635; AI formula suggestions</span>
+                        <span class="rp-chip todo">&#9675; Beta launch</span>
+                    </div>
+                </div>
+            </div>
+            <div class="roadmap-phase">
+                <div class="rp-label"><span class="rp-phase-tag upcoming">Phase 2</span><span
+                        class="rp-months">M6&ndash;M12</span></div>
+                <div class="rp-dot-col">
+                    <div class="rp-dot upcoming"></div>
+                </div>
+                <div class="rp-content">
+                    <div class="rp-content-header">
+                        <div class="rp-title">Compliance + Governance</div>
+                        <div class="rp-status planned">Planned</div>
+                    </div>
+                    <p class="rp-desc">Adding enterprise-grade compliance infrastructure: SOX-compliant immutable logs,
+                        role-based access control, change approval workflows, and SEC Edgar integration. Target
+                        2&ndash;3 paid pilots at $50&ndash;100K each.</p>
+                    <div class="rp-items">
+                        <span class="rp-chip todo">&#9675; SOX-compliant audit logs</span>
+                        <span class="rp-chip todo">&#9675; Role-based access control</span>
+                        <span class="rp-chip todo">&#9675; Data lineage tracking</span>
+                        <span class="rp-chip todo">&#9675; Approval workflows</span>
+                        <span class="rp-chip todo">&#9675; SEC Edgar integration</span>
+                        <span class="rp-chip todo">&#9675; Data masking</span>
+                        <span class="rp-chip todo">&#9675; Excel add-in</span>
+                    </div>
+                </div>
+            </div>
+            <div class="roadmap-phase">
+                <div class="rp-label"><span class="rp-phase-tag future">Phase 3</span><span
+                        class="rp-months">M12&ndash;M18</span></div>
+                <div class="rp-dot-col">
+                    <div class="rp-dot future"></div>
+                </div>
+                <div class="rp-content">
+                    <div class="rp-content-header">
+                        <div class="rp-title">Intelligence + Scale</div>
+                        <div class="rp-status future-s">Future</div>
+                    </div>
+                    <p class="rp-desc">Shipping advanced AI &mdash; error detection, anomaly detection, predictive
+                        modelling. Full Bloomberg Terminal API, model templates (LBO, DCF, risk), mobile app, and
+                        performance for 1M+ row models.</p>
+                    <div class="rp-items">
+                        <span class="rp-chip todo">&#9675; Advanced AI error detection</span>
+                        <span class="rp-chip todo">&#9675; Anomaly detection</span>
+                        <span class="rp-chip todo">&#9675; LBO / DCF templates</span>
+                        <span class="rp-chip todo">&#9675; Bloomberg Terminal API</span>
+                        <span class="rp-chip todo">&#9675; Mobile app (iOS / Android)</span>
+                        <span class="rp-chip todo">&#9675; 1M+ row performance</span>
+                    </div>
+                </div>
+            </div>
+            <div class="roadmap-phase">
+                <div class="rp-label"><span class="rp-phase-tag future">Phase 4</span><span
+                        class="rp-months">M18&ndash;M24</span></div>
+                <div class="rp-dot-col">
+                    <div class="rp-dot future"></div>
+                </div>
+                <div class="rp-content">
+                    <div class="rp-content-header">
+                        <div class="rp-title">Enterprise Readiness + Expansion</div>
+                        <div class="rp-status future-s">Future</div>
+                    </div>
+                    <p class="rp-desc">Full enterprise hardening: SAML/SSO, advanced cell-level permissions, scheduled
+                        PDF reports, open API for embedding, consolidation module for multi-sheet roll-ups. Series B and
+                        IPO readiness path.</p>
+                    <div class="rp-items">
+                        <span class="rp-chip todo">&#9675; SAML / SSO / AD</span>
+                        <span class="rp-chip todo">&#9675; Scheduled reports</span>
+                        <span class="rp-chip todo">&#9675; Open REST API</span>
+                        <span class="rp-chip todo">&#9675; Consolidation module</span>
+                        <span class="rp-chip todo">&#9675; Custom AI model training</span>
+                        <span class="rp-chip todo">&#9675; International expansion</span>
+                        <span class="rp-chip todo">&#9675; Series B &middot; $25&ndash;40M raise</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- INTEGRATIONS -->
+    <section class="integrations" id="integrations">
+        <div class="section-label">Native Integrations</div>
+        <h2 class="section-title reveal">Your data, where you need it.</h2>
+        <div class="int-grid reveal reveal-delay-1">
+            <div class="int-card" style="--glow-color:rgba(79,255,176,.15)">
+                <div class="int-logo" style="color:var(--accent)">Bloomberg Terminal</div>
+                <p>Real-time quotes, company financials, earnings data, and Bloomberg formulas &mdash; live in your
+                    cells.</p>
+                <div class="int-tag live">LIVE</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(0,212,255,.15)">
+                <div class="int-logo" style="color:var(--accent2)">SEC Edgar</div>
+                <p>Pull 10-K, 10-Q, 8-K filings directly. Financial statements auto-mapped to your model schema.</p>
+                <div class="int-tag live">LIVE</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(245,200,66,.15)">
+                <div class="int-logo" style="color:var(--gold)">Reuters / LSEG</div>
+                <p>Access Refinitiv data feeds, LSEG analytics, and Reuters news sentiment alongside your models.</p>
+                <div class="int-tag live">LIVE</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(123,108,255,.15)">
+                <div class="int-logo" style="color:var(--accent3)">Internal Systems</div>
+                <p>REST API and bank system connectors for Goldman, Morgan Stanley, JPMorgan internal data pipelines.
+                </p>
+                <div class="int-tag soon">COMING Q3</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(79,255,176,.15)">
+                <div class="int-logo" style="color:var(--accent)">Scheduled Refresh</div>
+                <p>Set data refresh schedules &mdash; daily, hourly, or real-time. Models always reflect current market
+                    data.</p>
+                <div class="int-tag live">LIVE</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(0,212,255,.15)">
+                <div class="int-logo" style="color:var(--accent2)">CSV &amp; Excel Import</div>
+                <p>Intelligent auto-mapping. Drag-and-drop any Excel file and preserve all formulas and named ranges.
+                </p>
+                <div class="int-tag live">LIVE</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(245,200,66,.15)">
+                <div class="int-logo" style="color:var(--gold)">Excel Add-in</div>
+                <p>Work inside Excel while Grydx powers compliance and audit in the background. Zero workflow
+                    disruption.</p>
+                <div class="int-tag soon">COMING Q4</div>
+            </div>
+            <div class="int-card" style="--glow-color:rgba(123,108,255,.15)">
+                <div class="int-logo" style="color:var(--accent3)">Open API</div>
+                <p>Embed Grydx spreadsheets into proprietary portals. Full REST API with webhooks and event streams.</p>
+                <div class="int-tag soon">COMING Q4</div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <!-- PRICING -->
+    <section class="pricing" id="pricing">
+        <div class="section-label">Pricing</div>
+        <h2 class="section-title reveal">Simple, usage-based pricing.</h2>
+        <div class="pricing-grid reveal reveal-delay-1">
+            <div class="pricing-card">
+                <div class="pricing-tier">Analyst</div>
+                <div class="pricing-price">$299</div>
+                <div class="pricing-period">/ user / month</div>
+                <p class="pricing-desc">For individual analysts and small teams getting started with enterprise-grade
+                    spreadsheets.</p>
+                <ul class="pricing-features">
+                    <li>Up to 5 users</li>
+                    <li>Real-time collaboration</li>
+                    <li>Basic audit trails</li>
+                    <li>Excel import/export</li>
+                    <li>AI formula suggestions</li>
+                    <li>Bloomberg integration</li>
+                    <li>5 financial model templates</li>
+                </ul>
+                <button class="pricing-btn outline" onclick="window.location.href='contact.html'">Get Started
+                    &rarr;</button>
+            </div>
+            <div class="pricing-card featured">
+                <div class="pricing-tier">Institution</div>
+                <div class="pricing-price">$899</div>
+                <div class="pricing-period">/ user / month</div>
+                <p class="pricing-desc">For investment banks, PE firms, and hedge funds needing full compliance and
+                    governance.</p>
+                <ul class="pricing-features">
+                    <li>Unlimited users</li>
+                    <li>SOX-compliant audit logs</li>
+                    <li>Role-based access control</li>
+                    <li>Change approval workflows</li>
+                    <li>Full AI suite</li>
+                    <li>All data integrations</li>
+                    <li>All financial model templates</li>
+                    <li>Priority support &amp; SLA</li>
+                </ul>
+                <button class="pricing-btn filled" onclick="window.location.href='contact.html'">Request Access
+                    &rarr;</button>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-tier">Enterprise</div>
+                <div class="pricing-price">Custom</div>
+                <div class="pricing-period">/ year</div>
+                <p class="pricing-desc">For Tier 1 banks requiring custom integrations, on-premise deployment, and
+                    dedicated support.</p>
+                <ul class="pricing-features">
+                    <li>On-premise or private cloud</li>
+                    <li>Custom bank system integrations</li>
+                    <li>SAML / SSO / Active Directory</li>
+                    <li>Dedicated Customer Success</li>
+                    <li>Custom AI model training</li>
+                    <li>White-labeling available</li>
+                    <li>Quarterly Executive Reviews</li>
+                </ul>
+                <button class="pricing-btn outline" onclick="window.location.href='contact.html'">Contact Sales
+                    &rarr;</button>
+            </div>
+        </div>
+    </section>
 
     <!-- CTA -->
     <section class="cta-section">
         <div class="cta-glow"></div>
         <h2>Ready to leave Excel <em>behind?</em></h2>
         <p>Join the private beta. First 20 institutions get 6 months free.</p>
-
-        <!-- ✅ UPDATED -->
         <div class="cta-actions">
-            <button class="btn-hero" onclick="window.location.href='demo.html'">
-                Try Live Demo
-            </button>
-
-            <button class="btn-hero-ghost" onclick="window.location.href='contact.html'">
-                Request Access
-            </button>
+            <button class="btn-hero" onclick="window.location.href='contact.html'">Request Early Access &rarr;</button>
+            <button class="btn-hero-ghost" onclick="window.location.href='contact.html'">Talk to Sales</button>
         </div>
     </section>
 
-    <!-- FOOTER (UNCHANGED) -->
+    <!-- FOOTER -->
     <footer>
         <div class="footer-left">
             <a href="#" class="logo">
@@ -117,7 +2857,6 @@
             </a>
             <div class="footer-tagline">The enterprise spreadsheet for serious finance.</div>
         </div>
-
         <ul class="footer-links">
             <li><a href="#">Product</a></li>
             <li><a href="#">Security</a></li>
@@ -126,73 +2865,24 @@
             <li><a href="#">Careers</a></li>
             <li><a href="#">Privacy</a></li>
         </ul>
-
-        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);">
-            &copy; 2026 Grydx, Inc.
-        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);">&copy; 2026 Grydx, Inc.</div>
     </footer>
 
     <script>
-        const cursor = document.getElementById('cursor'),
-            ring = document.getElementById('cursorRing');
-
-        let mouseX = 0,
-            mouseY = 0,
-            ringX = 0,
-            ringY = 0;
-
-        document.addEventListener('mousemove', e => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            cursor.style.left = mouseX + 'px';
-            cursor.style.top = mouseY + 'px';
-        });
-
-        function animateRing() {
-            ringX += (mouseX - ringX) * .12;
-            ringY += (mouseY - ringY) * .12;
-            ring.style.left = ringX + 'px';
-            ring.style.top = ringY + 'px';
-            requestAnimationFrame(animateRing);
-        }
-
+        const cursor = document.getElementById('cursor'), ring = document.getElementById('cursorRing');
+        let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px'; });
+        function animateRing() { ringX += (mouseX - ringX) * .12; ringY += (mouseY - ringY) * .12; ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px'; requestAnimationFrame(animateRing); }
         animateRing();
-
-        function toggleMenu() {
-            document.getElementById('mobileMenu').classList.toggle('open');
-        }
-
-        function closeMenu() {
-            document.getElementById('mobileMenu').classList.remove('open');
-        }
-
+        function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+        function closeMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
         const reveals = document.querySelectorAll('.reveal');
-        const obs = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (e.isIntersecting) e.target.classList.add('visible');
-            });
-        }, {
-            threshold: .08
-        });
-
+        const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: .08 });
         reveals.forEach(el => obs.observe(el));
-
         const nav = document.querySelector('nav');
-
-        window.addEventListener('scroll', () => {
-            nav.style.borderBottomColor =
-                window.scrollY > 50 ?
-                    'rgba(30,37,53,.8)' :
-                    'var(--border)';
-        });
-
-        if ('ontouchstart' in window) {
-            cursor.style.display = 'none';
-            ring.style.display = 'none';
-            document.body.style.cursor = 'auto';
-        }
+        window.addEventListener('scroll', () => { nav.style.borderBottomColor = window.scrollY > 50 ? 'rgba(30,37,53,.8)' : 'var(--border)'; });
+        if ('ontouchstart' in window) { cursor.style.display = 'none'; ring.style.display = 'none'; document.body.style.cursor = 'auto'; }
     </script>
-
 </body>
 
 </html>
