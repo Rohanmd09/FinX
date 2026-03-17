@@ -1,0 +1,4336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grydx — LBO Model · ACME Corp</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b0e;
+            --surface: #111318;
+            --surface2: #181c23;
+            --surface3: #1e2330;
+            --border: #252b38;
+            --border2: #2e3647;
+            --accent: #4f7fff;
+            --accent2: #7b9fff;
+            --accent-glow: rgba(79, 127, 255, .15);
+            --green: #22c55e;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --purple: #a78bfa;
+            --text: #e8ecf4;
+            --text2: #8b94a8;
+            --text3: #4f5a70;
+            --gold: #c9a84c;
+            --gold2: #e8c97a;
+            --sidebar-w: 340px;
+            --toolbar-h: 42px;
+            --formula-h: 34px;
+            --col-w: 118px;
+            --row-h: 27px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            height: 46px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 0;
+            flex-shrink: 0;
+            z-index: 200;
+            position: relative;
+        }
+
+        .logo {
+            font-family: 'Instrument Serif', serif;
+            font-size: 19px;
+            color: var(--text);
+            margin-right: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .logo span {
+            color: var(--accent2);
+        }
+
+        .tmenu {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            position: relative;
+        }
+
+        .tmenu-item {
+            padding: 5px 9px;
+            border-radius: 5px;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 12.5px;
+            transition: all .12s;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tmenu-item:hover,
+        .tmenu-item.open {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 5px;
+            z-index: 500;
+            min-width: 200px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+            display: none;
+            animation: dropIn .15s ease;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        @keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .dd-item {
+            padding: 7px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: var(--text2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            transition: all .1s;
+        }
+
+        .dd-item:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .dd-item.danger:hover {
+            background: rgba(239, 68, 68, .1);
+            color: var(--red);
+        }
+
+        .dd-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        .dd-kbd {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text3);
+            background: var(--surface3);
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+
+        .topbar-div {
+            width: 1px;
+            height: 18px;
+            background: var(--border);
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .doc-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-title {
+            font-size: 13.5px;
+            font-weight: 500;
+            letter-spacing: -.2px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 5px;
+            transition: background .12s;
+        }
+
+        .doc-title:hover {
+            background: var(--surface3);
+        }
+
+        .doc-title[contenteditable="true"] {
+            outline: 1px solid var(--accent);
+            background: var(--surface3);
+            padding: 2px 6px;
+        }
+
+        .vbadge {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--green);
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(34, 197, 94, .1);
+            border: 1px solid rgba(34, 197, 94, .25);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.8s ease infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(.8)
+            }
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .avatars {
+            display: flex;
+            align-items: center;
+            margin-right: 2px;
+        }
+
+        .av {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9.5px;
+            font-weight: 600;
+            margin-left: -6px;
+            cursor: pointer;
+            transition: transform .12s;
+            position: relative;
+        }
+
+        .av:first-child {
+            margin-left: 0;
+        }
+
+        .av:hover {
+            transform: scale(1.15);
+            z-index: 10;
+        }
+
+        .av.a1 {
+            background: #3b5bdb;
+            color: #c5d0f8
+        }
+
+        .av.a2 {
+            background: #2f9e44;
+            color: #b2f2bb
+        }
+
+        .av.a3 {
+            background: #c2255c;
+            color: #fcc2d7
+        }
+
+        .av.a4 {
+            background: #e67700;
+            color: #ffe8cc
+        }
+
+        .av-tooltip {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 10px;
+            color: var(--text);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .15s;
+        }
+
+        .av:hover .av-tooltip {
+            opacity: 1;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 11px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all .15s;
+            font-family: 'DM Sans', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border2);
+        }
+
+        .btn-ghost:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background: #3d6be8;
+        }
+
+        .btn-ai {
+            background: linear-gradient(135deg, #1a2a5e, #2a1a5e);
+            color: var(--accent2);
+            border: 1px solid rgba(79, 127, 255, .3);
+        }
+
+        .btn-ai:hover {
+            border-color: var(--accent);
+        }
+
+        .btn-green {
+            background: rgba(34, 197, 94, .12);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .25);
+        }
+
+        .btn-green:hover {
+            background: rgba(34, 197, 94, .2);
+        }
+
+        .btn-amber {
+            background: rgba(245, 158, 11, .12);
+            color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, .25);
+        }
+
+        .btn-amber:hover {
+            background: rgba(245, 158, 11, .2);
+        }
+
+        /* ─── TOOLBAR ─── */
+        .toolbar {
+            height: var(--toolbar-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 0;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        .toolbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tb-grp {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            padding: 0 5px;
+            border-right: 1px solid var(--border);
+        }
+
+        .tb-grp:last-child {
+            border-right: none;
+        }
+
+        .tb-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text2);
+            font-size: 12px;
+            transition: all .1s;
+            border: none;
+            background: transparent;
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .tb-btn:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .tb-btn.on {
+            background: var(--surface3);
+            color: var(--accent2);
+        }
+
+        .tb-btn.toggled {
+            background: var(--accent-glow);
+            color: var(--accent2);
+        }
+
+        .tb-sel {
+            height: 27px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text2);
+            font-size: 11.5px;
+            padding: 0 7px;
+            cursor: pointer;
+            font-family: 'DM Mono', monospace;
+            outline: none;
+            transition: border-color .12s;
+        }
+
+        .tb-sel:focus {
+            border-color: var(--accent);
+        }
+
+        .tb-label {
+            font-size: 11px;
+            color: var(--text3);
+            padding: 0 4px;
+            white-space: nowrap;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* ─── FORMULA BAR ─── */
+        .formulabar {
+            height: var(--formula-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .cell-ref-box {
+            width: 78px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text);
+            border-right: 1px solid var(--border);
+            background: var(--surface2);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .fx-sym {
+            width: 30px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent2);
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+            font-size: 15px;
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .fx-sym:hover {
+            background: var(--surface2);
+        }
+
+        .formula-input {
+            flex: 1;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 12.5px;
+            padding: 0 12px;
+            letter-spacing: .2px;
+        }
+
+        .formula-input:focus {
+            background: rgba(79, 127, 255, .04);
+        }
+
+        .fx-ai {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 12px;
+            font-size: 10.5px;
+            color: var(--accent2);
+            opacity: .7;
+            flex-shrink: 0;
+            font-family: 'DM Mono', monospace;
+            cursor: pointer;
+        }
+
+        .fx-ai:hover {
+            opacity: 1;
+        }
+
+        /* ─── LAYOUT ─── */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ─── KPI BAR ─── */
+        .kpibar {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .kpi {
+            flex: 1;
+            padding: 9px 14px;
+            border-right: 1px solid var(--border);
+            cursor: pointer;
+            transition: background .12s;
+        }
+
+        .kpi:last-child {
+            border-right: none;
+        }
+
+        .kpi:hover {
+            background: var(--surface3);
+        }
+
+        .kpi-lbl {
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--text3);
+        }
+
+        .kpi-val {
+            font-family: 'Instrument Serif', serif;
+            font-size: 21px;
+            color: var(--text);
+            line-height: 1.1;
+            margin: 1px 0;
+        }
+
+        .kpi-delta {
+            font-size: 10px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .up {
+            color: var(--green)
+        }
+
+        .dn {
+            color: var(--red)
+        }
+
+        .neu {
+            color: var(--text3)
+        }
+
+        /* ─── SPREADSHEET ─── */
+        .sheet-wrap {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .sheet-scroll {
+            flex: 1;
+            overflow: auto;
+            padding-bottom: 30px;
+        }
+
+        .sheet-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .sheet-scroll::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+
+        .sheet-scroll::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 4px;
+        }
+
+        .sheet-tbl {
+            border-collapse: collapse;
+            min-width: 100%;
+        }
+
+        .col-hdr-row {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .corner {
+            background: #13161e;
+            border-right: 1px solid var(--border);
+            border-bottom: 2px solid var(--border2);
+            width: 46px;
+            min-width: 46px;
+        }
+
+        .chdr {
+            background: #13161e;
+            border-right: 1px solid var(--border);
+            border-bottom: 2px solid var(--border2);
+            font-family: 'DM Mono', monospace;
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--text3);
+            text-align: center;
+            padding: 5px 4px;
+            min-width: var(--col-w);
+            width: var(--col-w);
+            user-select: none;
+            cursor: pointer;
+            transition: all .1s;
+        }
+
+        .chdr:hover {
+            background: var(--surface3);
+            color: var(--text2);
+        }
+
+        .chdr.sel {
+            background: var(--surface3);
+            color: var(--accent2);
+        }
+
+        .rhdr {
+            background: #13161e;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--text3);
+            text-align: right;
+            padding: 0 7px;
+            min-width: 46px;
+            width: 46px;
+            user-select: none;
+            cursor: pointer;
+            vertical-align: middle;
+            transition: all .1s;
+        }
+
+        .rhdr:hover {
+            background: var(--surface3);
+            color: var(--text2);
+        }
+
+        .rhdr.sel {
+            background: var(--surface3);
+            color: var(--accent2);
+        }
+
+        td.c {
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            min-width: var(--col-w);
+            width: var(--col-w);
+            height: var(--row-h);
+            padding: 0 7px;
+            vertical-align: middle;
+            cursor: cell;
+            position: relative;
+            font-size: 12.5px;
+            transition: background .06s;
+            white-space: nowrap;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        td.c:hover {
+            background: rgba(255, 255, 255, .03) !important;
+        }
+
+        td.c.active {
+            background: rgba(79, 127, 255, .1) !important;
+            outline: 2px solid var(--accent);
+            outline-offset: -1px;
+            z-index: 5;
+        }
+
+        td.c.in-range {
+            background: rgba(79, 127, 255, .05) !important;
+        }
+
+        tr:nth-child(even) td.c {
+            background: rgba(255, 255, 255, .015);
+        }
+
+        tr.sec-hdr td {
+            background: var(--surface2) !important;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .9px;
+            text-transform: uppercase;
+            color: var(--text3);
+            padding: 6px 7px;
+        }
+
+        tr.row-hdr-row td {
+            background: #13161e !important;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text2);
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .cn {
+            font-family: 'DM Mono', monospace;
+            display: block;
+            text-align: right;
+        }
+
+        .cn.pos {
+            color: var(--green)
+        }
+
+        .cn.neg {
+            color: var(--red)
+        }
+
+        .cn.hi {
+            color: var(--gold2);
+            font-weight: 600
+        }
+
+        .cn.norm {
+            color: var(--text)
+        }
+
+        .clbl {
+            color: var(--text2);
+            font-size: 12px;
+        }
+
+        .cfml {
+            color: var(--purple);
+            font-family: 'DM Mono', monospace;
+            font-size: 11.5px;
+        }
+
+        .cbold {
+            font-weight: 600;
+        }
+
+        .err-flag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-top: 8px solid var(--amber);
+            border-right: 8px solid var(--amber);
+        }
+
+        .ai-flag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-top: 8px solid var(--accent);
+            border-right: 8px solid var(--accent);
+        }
+
+        .collab-ring {
+            position: absolute;
+            inset: 0;
+            border: 2px solid;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .collab-name {
+            position: absolute;
+            top: -17px;
+            left: 0;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 2px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        /* cell editor */
+        .cell-editor {
+            position: absolute;
+            inset: -1px;
+            z-index: 50;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            outline: none;
+            font-family: 'DM Mono', monospace;
+            font-size: 12.5px;
+            color: var(--text);
+            padding: 0 6px;
+            display: none;
+        }
+
+        /* ─── SHEET TABS ─── */
+        .sheettabs {
+            height: 30px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            gap: 1px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .stab-sheet {
+            height: 24px;
+            padding: 0 11px;
+            border-radius: 4px 4px 0 0;
+            font-size: 11.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text2);
+            transition: all .12s;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .stab-sheet:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .stab-sheet.active {
+            background: var(--surface3);
+            color: var(--text);
+            border-color: var(--border);
+            border-bottom-color: var(--surface3);
+        }
+
+        .tab-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        .tblue {
+            background: var(--accent)
+        }
+
+        .tgreen {
+            background: var(--green)
+        }
+
+        .tamber {
+            background: var(--amber)
+        }
+
+        .tpurple {
+            background: var(--purple)
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sb-header {
+            padding: 12px 14px 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .sb-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+
+        .ai-orb {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #1a3a8f, #4a1a8f);
+            border: 1px solid rgba(79, 127, 255, .4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .sb-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .stab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            font-size: 11.5px;
+            color: var(--text3);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all .15s;
+            font-weight: 500;
+        }
+
+        .stab:hover {
+            color: var(--text2);
+        }
+
+        .stab.act {
+            color: var(--accent2);
+            border-bottom-color: var(--accent);
+        }
+
+        .sb-panel {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sb-panel::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sb-panel::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 2px;
+        }
+
+        /* chat */
+        .chat-msgs {
+            flex: 1;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .chat-msgs::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .chat-msgs::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 2px;
+        }
+
+        .msg {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            animation: msgIn .2s ease;
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .msg-u {
+            align-items: flex-end;
+        }
+
+        .msg-a {
+            align-items: flex-start;
+        }
+
+        .bubble {
+            max-width: 90%;
+            padding: 8px 11px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+
+        .msg-u .bubble {
+            background: var(--accent);
+            color: #fff;
+            border-radius: 10px 10px 2px 10px;
+        }
+
+        .msg-a .bubble {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: var(--text);
+            border-radius: 10px 10px 10px 2px;
+        }
+
+        .msg-meta {
+            font-size: 10px;
+            color: var(--text3);
+            padding: 0 3px;
+        }
+
+        .code-block {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 5px;
+            padding: 6px 9px;
+            margin: 5px 0;
+            color: var(--accent2);
+            display: block;
+            cursor: pointer;
+            transition: border-color .12s;
+        }
+
+        .code-block:hover {
+            border-color: var(--accent);
+        }
+
+        .act-row {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+            flex-wrap: wrap;
+        }
+
+        .act-btn {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: var(--surface3);
+            color: var(--text2);
+            transition: all .12s;
+        }
+
+        .act-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent2);
+        }
+
+        .act-btn.p {
+            background: rgba(79, 127, 255, .12);
+            border-color: rgba(79, 127, 255, .3);
+            color: var(--accent2);
+        }
+
+        .act-btn.p:hover {
+            background: rgba(79, 127, 255, .22);
+        }
+
+        .act-btn.g {
+            background: rgba(34, 197, 94, .1);
+            border-color: rgba(34, 197, 94, .25);
+            color: var(--green);
+        }
+
+        .data-card {
+            background: rgba(34, 197, 94, .06);
+            border: 1px solid rgba(34, 197, 94, .2);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            margin: 4px 0;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(34, 197, 94, .08);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-lbl {
+            color: var(--text2);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .data-val {
+            color: var(--green);
+        }
+
+        .warn-card {
+            background: rgba(245, 158, 11, .07);
+            border: 1px solid rgba(245, 158, 11, .2);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            color: var(--amber);
+            margin: 4px 0;
+            display: flex;
+            gap: 7px;
+            line-height: 1.4;
+        }
+
+        .err-card {
+            background: rgba(239, 68, 68, .07);
+            border: 1px solid rgba(239, 68, 68, .2);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 11.5px;
+            color: var(--red);
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .typing-ind {
+            display: flex;
+            gap: 3px;
+            padding: 10px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 10px 10px 10px 2px;
+            width: fit-content;
+        }
+
+        .tdot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--text3);
+            animation: tdot 1.2s ease infinite;
+        }
+
+        .tdot:nth-child(2) {
+            animation-delay: .2s
+        }
+
+        .tdot:nth-child(3) {
+            animation-delay: .4s
+        }
+
+        @keyframes tdot {
+
+            0%,
+            100% {
+                opacity: .3;
+                transform: scale(.8)
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .chat-input-wrap {
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chat-box {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            gap: 7px;
+            padding: 7px 9px;
+            transition: border-color .15s;
+        }
+
+        .chat-box:focus-within {
+            border-color: var(--accent);
+        }
+
+        .chat-ta {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12.5px;
+            line-height: 1.5;
+            resize: none;
+            max-height: 72px;
+            min-height: 18px;
+        }
+
+        .chat-ta::placeholder {
+            color: var(--text3);
+        }
+
+        .send-btn {
+            width: 27px;
+            height: 27px;
+            border-radius: 6px;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all .12s;
+            color: #fff;
+            font-size: 11px;
+        }
+
+        .send-btn:hover {
+            background: #3d6be8;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: var(--border2);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hint-pills {
+            display: flex;
+            gap: 5px;
+            margin-top: 7px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            font-size: 10.5px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            color: var(--text3);
+            cursor: pointer;
+            transition: all .12s;
+            white-space: nowrap;
+        }
+
+        .pill:hover {
+            border-color: var(--accent);
+            color: var(--accent2);
+            background: rgba(79, 127, 255, .08);
+        }
+
+        /* audit */
+        .audit-list {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .audit-item {
+            display: flex;
+            gap: 7px;
+            padding: 7px 9px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: border-color .12s;
+        }
+
+        .audit-item:hover {
+            border-color: var(--border2);
+        }
+
+        .aud-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 9.5px;
+            color: var(--text3);
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+
+        .aud-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .aud-user {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 2px;
+        }
+
+        .aud-desc {
+            font-size: 11px;
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .aud-type {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .t-fml {
+            background: rgba(167, 139, 250, .15);
+            color: var(--purple)
+        }
+
+        .t-dat {
+            background: rgba(79, 127, 255, .12);
+            color: var(--accent2)
+        }
+
+        .t-apr {
+            background: rgba(34, 197, 94, .12);
+            color: var(--green)
+        }
+
+        .t-val {
+            background: rgba(245, 158, 11, .1);
+            color: var(--amber)
+        }
+
+        .t-del {
+            background: rgba(239, 68, 68, .1);
+            color: var(--red)
+        }
+
+        /* errors panel */
+        .errs-list {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .err-item {
+            padding: 10px 11px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: border-color .12s;
+        }
+
+        .err-item:hover {
+            border-color: var(--amber);
+        }
+
+        .err-item.fixed {
+            border-color: rgba(34, 197, 94, .3);
+            opacity: .6;
+        }
+
+        .err-hdr {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .err-desc {
+            font-size: 11.5px;
+            color: var(--text2);
+            line-height: 1.4;
+            margin-bottom: 7px;
+        }
+
+        /* ─── STATUSBAR ─── */
+        .statusbar {
+            height: 22px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .stat {
+            font-size: 10px;
+            font-family: 'DM Mono', monospace;
+            color: rgba(255, 255, 255, .7);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .stat b {
+            color: #fff;
+        }
+
+        .stat-sep {
+            width: 1px;
+            height: 10px;
+            background: rgba(255, 255, 255, .2);
+        }
+
+        /* ─── MODALS ─── */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .65);
+            z-index: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn .15s ease;
+        }
+
+        .overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .modal {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 24px;
+            width: 480px;
+            max-width: 95vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .6);
+            animation: modalIn .2s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .modal-sm {
+            width: 360px;
+        }
+
+        .modal-lg {
+            width: 600px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: -.3px;
+        }
+
+        .modal-sub {
+            font-size: 12.5px;
+            color: var(--text2);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .form-row {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 5px;
+            display: block;
+            letter-spacing: .2px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            padding: 8px 11px;
+            outline: none;
+            transition: border-color .15s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+
+        .form-select {
+            width: 100%;
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            padding: 8px 11px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .check-row:last-child {
+            border-bottom: none;
+        }
+
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid var(--border2);
+            background: var(--surface3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 9px;
+            transition: all .12s;
+        }
+
+        .check-box.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .check-lbl {
+            font-size: 12.5px;
+            color: var(--text);
+        }
+
+        .check-sub {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        .share-link-box {
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 9px 11px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11.5px;
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .perm-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .perm-row:last-child {
+            border-bottom: none;
+        }
+
+        .perm-name {
+            font-size: 12.5px;
+            font-weight: 500;
+        }
+
+        .perm-role {
+            font-size: 11px;
+            color: var(--text3);
+        }
+
+        .perm-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .role-analyst {
+            background: rgba(79, 127, 255, .15);
+            color: var(--accent2);
+        }
+
+        .role-editor {
+            background: rgba(245, 158, 11, .12);
+            color: var(--amber);
+        }
+
+        .role-director {
+            background: rgba(34, 197, 94, .12);
+            color: var(--green);
+        }
+
+        .role-viewer {
+            background: var(--surface3);
+            color: var(--text3);
+        }
+
+        .approve-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .apr-item {
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 13px;
+        }
+
+        .apr-cell {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent2);
+        }
+
+        .apr-from {
+            font-size: 11px;
+            color: var(--text3);
+            margin: 2px 0;
+        }
+
+        .apr-body {
+            font-size: 12.5px;
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .bbg-ticker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bbg-ticker:last-child {
+            border-bottom: none;
+        }
+
+        .bbg-sym {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--amber);
+        }
+
+        .bbg-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .bbg-chg {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--surface3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            transition: width .3s ease;
+        }
+
+        /* sensitivity table */
+        .sens-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .sens-table td,
+        .sens-table th {
+            padding: 5px 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .sens-table th {
+            background: var(--surface3);
+            color: var(--text2);
+            font-size: 10px;
+        }
+
+        .sens-hi {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+        }
+
+        .sens-mid {
+            background: rgba(245, 158, 11, .1);
+            color: var(--amber);
+        }
+
+        .sens-lo {
+            background: rgba(239, 68, 68, .1);
+            color: var(--red);
+        }
+
+        .sens-active {
+            outline: 2px solid var(--accent);
+        }
+
+        /* context menu */
+        .ctxmenu {
+            position: fixed;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 4px;
+            z-index: 800;
+            min-width: 190px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .5);
+            display: none;
+            animation: dropIn .12s ease;
+        }
+
+        .ctxmenu.show {
+            display: block;
+        }
+
+        .ctx-item {
+            padding: 7px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: var(--text2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all .1s;
+        }
+
+        .ctx-item:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .ctx-item.danger:hover {
+            background: rgba(239, 68, 68, .1);
+            color: var(--red);
+        }
+
+        .ctx-item .ctx-icon {
+            font-size: 13px;
+            width: 18px;
+            text-align: center;
+        }
+
+        .ctx-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 3px 0;
+        }
+
+        /* toast */
+        .toast {
+            position: fixed;
+            bottom: 42px;
+            left: 50%;
+            transform: translateX(-50%) translateY(12px);
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 9px 15px;
+            font-size: 12.5px;
+            color: var(--text);
+            z-index: 1000;
+            opacity: 0;
+            transition: all .22s;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-icon {
+            font-size: 14px;
+        }
+
+        /* bloomberg animation */
+        .bbg-row-anim {
+            animation: bbgPulse .6s ease;
+        }
+
+        @keyframes bbgPulse {
+
+            0%,
+            100% {
+                background: transparent
+            }
+
+            50% {
+                background: rgba(245, 158, 11, .15)
+            }
+        }
+
+        /* color picker */
+        .color-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .swatch {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all .12s;
+        }
+
+        .swatch:hover,
+        .swatch.active {
+            border-color: var(--text);
+            transform: scale(1.1);
+        }
+
+        /* resize handle for sidebar */
+        .resize-handle {
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            flex-shrink: 0;
+            transition: background .15s;
+        }
+
+        .resize-handle:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══ TOPBAR ══ -->
+    <div class="topbar" id="topbar">
+        <div class="logo" onclick="showModal('aboutModal')">Gryd<span>x</span></div>
+
+        <div class="tmenu" id="mainMenu">
+            <div class="tmenu-item" onclick="toggleMenu('menuFile',this)">File
+                <div class="dropdown" id="menuFile">
+                    <div class="dd-item" onclick="showModal('newModal')"><span>🗋 New model</span><span
+                            class="dd-kbd">⌘N</span></div>
+                    <div class="dd-item" onclick="triggerImport()"><span>📂 Import .xlsx</span><span
+                            class="dd-kbd">⌘O</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="saveFile()"><span>💾 Save</span><span class="dd-kbd">⌘S</span></div>
+                    <div class="dd-item" onclick="showModal('exportModal')"><span>⬇ Export</span><span
+                            class="dd-kbd">⌘E</span></div>
+                    <div class="dd-item" onclick="showModal('shareModal')"><span>⤴ Share</span><span
+                            class="dd-kbd">⌘⇧S</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="showModal('versionModal')"><span>⏱ Version history</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item danger" onclick="showToast('❌ Closing model…')"><span>✕ Close</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuEdit',this)">Edit
+                <div class="dropdown" id="menuEdit">
+                    <div class="dd-item" onclick="doUndo()"><span>↩ Undo</span><span class="dd-kbd">⌘Z</span></div>
+                    <div class="dd-item" onclick="doRedo()"><span>↪ Redo</span><span class="dd-kbd">⌘⇧Z</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="doCopy()"><span>📋 Copy</span><span class="dd-kbd">⌘C</span></div>
+                    <div class="dd-item" onclick="doCut()"><span>✂ Cut</span><span class="dd-kbd">⌘X</span></div>
+                    <div class="dd-item" onclick="doPaste()"><span>📌 Paste</span><span class="dd-kbd">⌘V</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="showModal('findModal')"><span>🔍 Find &amp; replace</span><span
+                            class="dd-kbd">⌘H</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuView',this)">View
+                <div class="dropdown" id="menuView">
+                    <div class="dd-item" onclick="toggleFreeze()"><span id="freezeLbl">❄ Freeze top row</span></div>
+                    <div class="dd-item" onclick="toggleGridlines()"><span id="gridLbl">⊞ Hide gridlines</span></div>
+                    <div class="dd-item" onclick="toggleZoom(1.1)"><span>🔍 Zoom in</span><span class="dd-kbd">⌘+</span>
+                    </div>
+                    <div class="dd-item" onclick="toggleZoom(0.9)"><span>🔍 Zoom out</span><span
+                            class="dd-kbd">⌘-</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="toggleSidebar()"><span id="sidebarLbl">◧ Hide AI sidebar</span></div>
+                    <div class="dd-item" onclick="toggleKPI()"><span id="kpiLbl">▤ Hide KPI bar</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuInsert',this)">Insert
+                <div class="dropdown" id="menuInsert">
+                    <div class="dd-item" onclick="insertRow('above')"><span>↑ Row above</span></div>
+                    <div class="dd-item" onclick="insertRow('below')"><span>↓ Row below</span></div>
+                    <div class="dd-item" onclick="insertCol()"><span>← Column</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="showModal('templateModal')"><span>📊 Model template</span></div>
+                    <div class="dd-item" onclick="showModal('chartModal')"><span>📈 Chart</span></div>
+                    <div class="dd-item" onclick="showModal('commentModal')"><span>💬 Comment</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuFormat',this)">Format
+                <div class="dropdown" id="menuFormat">
+                    <div class="dd-item" onclick="applyFmt('bold')"><span>Bold</span><span class="dd-kbd">⌘B</span>
+                    </div>
+                    <div class="dd-item" onclick="applyFmt('italic')"><span>Italic</span><span class="dd-kbd">⌘I</span>
+                    </div>
+                    <div class="dd-item" onclick="applyFmt('underline')"><span>Underline</span><span
+                            class="dd-kbd">⌘U</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="showModal('cellFormatModal')"><span>⊡ Cell format…</span></div>
+                    <div class="dd-item" onclick="showModal('colorModal')"><span>🎨 Fill color…</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuData',this)">Data
+                <div class="dropdown" id="menuData">
+                    <div class="dd-item" onclick="showModal('bbgModal')"><span>⬤ Bloomberg refresh</span></div>
+                    <div class="dd-item" onclick="showModal('secModal')"><span>📄 SEC Edgar pull</span></div>
+                    <div class="dd-item" onclick="showModal('reutersModal')"><span>📡 Reuters / LSEG</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="sortCol('asc')"><span>↑ Sort A→Z</span></div>
+                    <div class="dd-item" onclick="sortCol('desc')"><span>↓ Sort Z→A</span></div>
+                    <div class="dd-item" onclick="toggleFilter()"><span>⊟ Toggle filter</span></div>
+                </div>
+            </div>
+            <div class="tmenu-item" onclick="toggleMenu('menuTools',this)">Tools
+                <div class="dropdown" id="menuTools">
+                    <div class="dd-item" onclick="showModal('validateModal')"><span>✓ Validate formulas</span></div>
+                    <div class="dd-item" onclick="showModal('auditTrailModal')"><span>📋 Full audit trail</span></div>
+                    <div class="dd-item" onclick="showModal('permModal')"><span>🔒 Permissions</span></div>
+                    <div class="dd-sep"></div>
+                    <div class="dd-item" onclick="showModal('settingsModal')"><span>⚙ Settings</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-div"></div>
+
+        <div class="doc-area">
+            <div class="doc-title" id="docTitle" onclick="makeEditable(this)" onblur="finishEdit(this)"
+                onkeydown="titleKey(event,this)">LBO Model — ACME Corp</div>
+            <span class="vbadge" id="versionBadge">v3.2</span>
+            <div class="live-badge">
+                <div class="live-dot"></div>LIVE
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="avatars">
+                <div class="av a1" onclick="showModal('collabModal')">
+                    <div class="av-tooltip">J. Anderson (You)</div>JA
+                </div>
+                <div class="av a2" onclick="showModal('collabModal')">
+                    <div class="av-tooltip">M. Chen · cell B11</div>MC
+                </div>
+                <div class="av a3" onclick="showModal('collabModal')">
+                    <div class="av-tooltip">R. Patel · viewing</div>RP
+                </div>
+                <div class="av a4" onclick="showModal('collabModal')">
+                    <div class="av-tooltip">S. Kim · away</div>SK
+                </div>
+            </div>
+            <button class="btn btn-ghost" onclick="showModal('exportModal')">⬇ Export</button>
+            <button class="btn btn-ghost" onclick="showModal('shareModal')">⤴ Share</button>
+            <button class="btn btn-primary" onclick="showModal('approvalModal')">Submit for Approval</button>
+        </div>
+    </div>
+
+    <!-- ══ TOOLBAR ══ -->
+    <div class="toolbar">
+        <div class="tb-grp">
+            <select class="tb-sel" id="fontSel" onchange="applyFont(this.value)" style="width:100px">
+                <option>DM Mono</option>
+                <option>DM Sans</option>
+                <option>Instrument Serif</option>
+                <option>Georgia</option>
+                <option>Courier New</option>
+            </select>
+            <select class="tb-sel" id="sizeSel" onchange="applySize(this.value)" style="width:54px">
+                <option>10</option>
+                <option>11</option>
+                <option selected>12</option>
+                <option>13</option>
+                <option>14</option>
+                <option>16</option>
+                <option>18</option>
+            </select>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" id="btnBold" title="Bold (⌘B)" onclick="applyFmt('bold')"><b>B</b></button>
+            <button class="tb-btn" id="btnItalic" title="Italic (⌘I)" onclick="applyFmt('italic')"
+                style="font-style:italic">I</button>
+            <button class="tb-btn" id="btnUnderline" title="Underline (⌘U)" onclick="applyFmt('underline')"
+                style="text-decoration:underline">U</button>
+            <button class="tb-btn" id="btnStrike" title="Strikethrough"
+                onclick="applyFmt('strikethrough')"><s>S</s></button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" title="Fill color" onclick="showModal('colorModal')">◧</button>
+            <button class="tb-btn" title="Text color" onclick="showModal('textColorModal')"><span
+                    style="border-bottom:3px solid var(--accent2)">A</span></button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" id="btnAlignL" title="Align left" onclick="setAlign('left')">⬤⬤⬤ ←</button>
+            <button class="tb-btn on" id="btnAlignC" title="Align center" onclick="setAlign('center')">⬤⬤</button>
+            <button class="tb-btn" id="btnAlignR" title="Align right" onclick="setAlign('right')">→ ⬤⬤⬤</button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" title="Currency ($)" onclick="applyNumFmt('currency')">$</button>
+            <button class="tb-btn" title="Percent (%)" onclick="applyNumFmt('pct')">%</button>
+            <button class="tb-btn" title="Comma (,)" onclick="applyNumFmt('comma')">,</button>
+            <button class="tb-btn" title="More decimals" onclick="applyNumFmt('dec+')">.0+</button>
+            <button class="tb-btn" title="Fewer decimals" onclick="applyNumFmt('dec-')">.0−</button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" title="Merge & center" onclick="mergeCells()">⊡</button>
+            <button class="tb-btn" title="Wrap text" onclick="toggleWrap()">↵</button>
+            <button class="tb-btn" title="Borders" onclick="showModal('borderModal')">⊞</button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" title="Sort ascending" onclick="sortCol('asc')">↑A</button>
+            <button class="tb-btn" title="Sort descending" onclick="sortCol('desc')">↓Z</button>
+            <button class="tb-btn" id="btnFilter" title="Filter" onclick="toggleFilter()">⊟</button>
+            <button class="tb-btn" id="btnFreeze" title="Freeze rows" onclick="toggleFreeze()">❄</button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px;color:var(--amber)"
+                title="Bloomberg refresh" onclick="showModal('bbgModal')">⬤ BBG</button>
+            <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px" title="SEC Edgar"
+                onclick="showModal('secModal')">📄 SEC</button>
+            <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px" title="Reuters"
+                onclick="showModal('reutersModal')">📡 RTR</button>
+        </div>
+        <div class="tb-grp">
+            <button class="tb-btn" title="Insert chart" onclick="showModal('chartModal')">📈</button>
+            <button class="tb-btn" title="Validate formulas" onclick="showModal('validateModal')">✓</button>
+            <button class="tb-btn" title="Comment" onclick="showModal('commentModal')">💬</button>
+        </div>
+        <div style="margin-left:auto;padding-left:8px">
+            <button class="btn btn-ai" onclick="focusChat()">✦ Ask AI</button>
+        </div>
+    </div>
+
+    <!-- ══ FORMULA BAR ══ -->
+    <div class="formulabar">
+        <div class="cell-ref-box" id="cellRefBox" onclick="promptGoTo()">E6</div>
+        <div class="fx-sym" onclick="showModal('fnLibrary')" title="Function library">ƒx</div>
+        <input class="formula-input" id="formulaInput" value="=IRR(C8:C15, 0.1) * XNPV(E4, D8:D15, B8:B15)"
+            onkeydown="formulaBarKey(event)" onchange="commitFormula(this.value)">
+        <div class="fx-ai" title="Explain with AI" onclick="explainFormula()">✦ AI-assisted · click to explain</div>
+    </div>
+
+    <!-- ══ KPI BAR ══ -->
+    <div class="kpibar" id="kpiBar">
+        <div class="kpi"
+            onclick="showKpiDetail('IRR','22.4%','↑ +1.2pp vs base case','IRR is the annualized return on the equity investment over the hold period, accounting for the precise timing of all cash flows using XNPV.')">
+            <div class="kpi-lbl">IRR</div>
+            <div class="kpi-val" style="color:var(--green)" id="kpiIRR">22.4%</div>
+            <div class="kpi-delta up">↑ +1.2pp vs base</div>
+        </div>
+        <div class="kpi"
+            onclick="showKpiDetail('MOIC','3.1×','↑ Above 3.0× target','Multiple on Invested Capital — total value returned to equity investors divided by equity invested at entry.')">
+            <div class="kpi-lbl">MOIC</div>
+            <div class="kpi-val" id="kpiMOIC">3.1×</div>
+            <div class="kpi-delta up">↑ Target 3.0×</div>
+        </div>
+        <div class="kpi"
+            onclick="showKpiDetail('Net Debt (Y5)','$548M','↓ –$372M from entry','Net debt at exit after 5 years of scheduled amortization and excess cash flow sweeps.')">
+            <div class="kpi-lbl">Net Debt (Y5)</div>
+            <div class="kpi-val" id="kpiDebt">$548M</div>
+            <div class="kpi-delta dn">↓ –$372M from entry</div>
+        </div>
+        <div class="kpi"
+            onclick="showKpiDetail('Entry EV','$2.1B','10.8× Entry EBITDA','Enterprise Value at acquisition = Equity + Net Debt at closing.')">
+            <div class="kpi-lbl">Entry EV</div>
+            <div class="kpi-val">$2.1B</div>
+            <div class="kpi-delta neu">10.8× Entry EBITDA</div>
+        </div>
+        <div class="kpi"
+            onclick="showKpiDetail('Equity Contribution','$630M','30% of TEV','Sponsor equity check at entry. Remaining 70% financed via leveraged debt stack.')">
+            <div class="kpi-lbl">Equity Check</div>
+            <div class="kpi-val">$630M</div>
+            <div class="kpi-delta neu">30% of TEV</div>
+        </div>
+    </div>
+
+    <!-- ══ WORKSPACE ══ -->
+    <div class="workspace">
+
+        <!-- SPREADSHEET -->
+        <div class="sheet-wrap" id="sheetWrap">
+            <div class="sheet-scroll" id="sheetScroll">
+                <table class="sheet-tbl" id="sheetTable">
+                    <thead>
+                        <tr class="col-hdr-row">
+                            <th class="corner" onclick="selectAll()"></th>
+                            <th class="chdr" id="colA" onclick="selectCol('A')">A</th>
+                            <th class="chdr" id="colB" onclick="selectCol('B')">B</th>
+                            <th class="chdr" id="colC" onclick="selectCol('C')">C</th>
+                            <th class="chdr" id="colD" onclick="selectCol('D')">D</th>
+                            <th class="chdr sel" id="colE" onclick="selectCol('E')">E</th>
+                            <th class="chdr" id="colF" onclick="selectCol('F')">F</th>
+                            <th class="chdr" id="colG" onclick="selectCol('G')">G</th>
+                            <th class="chdr" id="colH" onclick="selectCol('H')">H</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sheetBody"></tbody>
+                </table>
+            </div>
+            <!-- Sheet tabs -->
+            <div class="sheettabs">
+                <div class="stab-sheet active">
+                    <div class="tab-dot tblue"></div>LBO Model
+                </div>
+                <div class="stab-sheet" onclick="switchSheet('DCF Analysis')">
+                    <div class="tab-dot tgreen"></div>DCF Analysis
+                </div>
+                <div class="stab-sheet" onclick="switchSheet('Debt Schedule')">
+                    <div class="tab-dot tamber"></div>Debt Schedule
+                </div>
+                <div class="stab-sheet" onclick="switchSheet('Sources & Uses')">Sources &amp; Uses</div>
+                <div class="stab-sheet" onclick="switchSheet('Assumptions')">
+                    <div class="tab-dot tpurple"></div>Assumptions
+                </div>
+                <div class="stab-sheet" onclick="addSheet(this)" style="color:var(--text3)">＋</div>
+            </div>
+        </div>
+
+        <!-- RESIZE HANDLE -->
+        <div class="resize-handle" id="resizeHandle"></div>
+
+        <!-- AI SIDEBAR -->
+        <div class="sidebar" id="aiSidebar">
+            <div class="sb-header">
+                <div class="sb-title">
+                    <div class="ai-orb">✦</div>Grydx AI
+                </div>
+                <div style="display:flex;gap:5px">
+                    <button class="btn btn-ghost" style="padding:3px 7px;font-size:11px"
+                        onclick="showModal('contextModal')">⊙ Context</button>
+                    <button class="btn btn-ghost" style="padding:3px 7px;font-size:11px" onclick="clearChat()">✕
+                        Clear</button>
+                </div>
+            </div>
+            <div class="sb-tabs">
+                <div class="stab act" id="tabChat" onclick="switchSideTab('chat',this)">Chat</div>
+                <div class="stab" id="tabAudit" onclick="switchSideTab('audit',this)">Audit Log</div>
+                <div class="stab" id="tabErrors" onclick="switchSideTab('errors',this)">Errors <span id="errCount"
+                        style="background:var(--amber);color:#000;border-radius:10px;padding:0 5px;font-size:9px;margin-left:2px;font-weight:700">2</span>
+                </div>
+            </div>
+
+            <!-- CHAT PANEL -->
+            <div id="panelChat" class="sb-panel">
+                <div class="chat-msgs" id="chatMsgs"></div>
+                <div class="chat-input-wrap">
+                    <div class="chat-box">
+                        <textarea class="chat-ta" id="chatInput" rows="1" placeholder="Ask AI — formulas, data, errors…"
+                            onkeydown="chatKey(event)" oninput="autoResize(this)"></textarea>
+                        <button class="send-btn" id="sendBtn" onclick="sendMsg()">➤</button>
+                    </div>
+                    <div class="hint-pills">
+                        <span class="pill"
+                            onclick="fillPrompt('Build a sensitivity table for IRR vs entry multiple')">Sensitivity
+                            table</span>
+                        <span class="pill" onclick="fillPrompt('Check all formulas for errors')">Check errors</span>
+                        <span class="pill" onclick="fillPrompt('Pull SEC 10-K revenue for ACME Corp FY2024')">SEC data
+                            pull</span>
+                        <span class="pill" onclick="fillPrompt('Explain the IRR formula in E6')">Explain formula</span>
+                        <span class="pill" onclick="fillPrompt('What is the MOIC if exit multiple is 11x?')">Exit
+                            scenario</span>
+                        <span class="pill" onclick="fillPrompt('Generate a full DCF model template')">DCF
+                            template</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIT PANEL -->
+            <div id="panelAudit" class="sb-panel" style="display:none">
+                <div
+                    style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px 4px;flex-shrink:0">
+                    <span style="font-size:10.5px;color:var(--text3);font-family:'DM Mono',monospace">● LIVE · Recording
+                        · SOX</span>
+                    <button class="btn btn-ghost" style="padding:3px 8px;font-size:10.5px"
+                        onclick="showModal('exportAuditModal')">Export PDF</button>
+                </div>
+                <div class="audit-list" id="auditList"></div>
+            </div>
+
+            <!-- ERRORS PANEL -->
+            <div id="panelErrors" class="sb-panel" style="display:none">
+                <div style="padding:10px 12px 4px;font-size:11.5px;color:var(--text2);flex-shrink:0">AI-detected issues
+                    requiring review</div>
+                <div class="errs-list" id="errsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ STATUS BAR ══ -->
+    <div class="statusbar">
+        <div class="stat"><b id="statCell">E6</b> selected</div>
+        <div class="stat-sep"></div>
+        <div class="stat">SUM: <b id="statSum">22.4%</b></div>
+        <div class="stat">AVG: <b id="statAvg">22.4%</b></div>
+        <div class="stat">COUNT: <b id="statCount">1</b></div>
+        <div class="stat-sep"></div>
+        <div class="stat">Bloomberg: <b id="statBBG">Live ✓</b></div>
+        <div class="stat">Audit: <b>● Recording</b></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><b id="statUsers">4</b> users active</div>
+        <div style="margin-left:auto" class="stat">Zoom: <b id="zoomLbl">100%</b></div>
+        <div class="stat">Saved <b id="saveLbl">just now</b></div>
+    </div>
+
+    <!-- ══ TOAST ══ -->
+    <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg"></span></div>
+
+    <!-- ══ CONTEXT MENU ══ -->
+    <div class="ctxmenu" id="ctxMenu">
+        <div class="ctx-item" onclick="doCopy()"><span class="ctx-icon">📋</span> Copy <span
+                style="margin-left:auto;font-size:10px;color:var(--text3)">⌘C</span></div>
+        <div class="ctx-item" onclick="doCut()"><span class="ctx-icon">✂</span> Cut <span
+                style="margin-left:auto;font-size:10px;color:var(--text3)">⌘X</span></div>
+        <div class="ctx-item" onclick="doPaste()"><span class="ctx-icon">📌</span> Paste <span
+                style="margin-left:auto;font-size:10px;color:var(--text3)">⌘V</span></div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="explainFormula()"><span class="ctx-icon">✦</span> Explain with AI</div>
+        <div class="ctx-item" onclick="showModal('validateModal')"><span class="ctx-icon">✓</span> Validate formula
+        </div>
+        <div class="ctx-item" onclick="showModal('approvalModal')"><span class="ctx-icon">⊙</span> Request approval
+        </div>
+        <div class="ctx-item" onclick="showModal('commentModal')"><span class="ctx-icon">💬</span> Add comment</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="insertRow('above')"><span class="ctx-icon">↑</span> Insert row above</div>
+        <div class="ctx-item" onclick="insertRow('below')"><span class="ctx-icon">↓</span> Insert row below</div>
+        <div class="ctx-item" onclick="deleteRow()"><span class="ctx-icon">✕</span> Delete row</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="showCellHistory()"><span class="ctx-icon">⏱</span> Cell history</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item danger" onclick="clearCell()"><span class="ctx-icon">⊗</span> Clear contents</div>
+    </div>
+
+    <!-- ══════════ MODALS ══════════ -->
+
+    <!-- SHARE MODAL -->
+    <div class="overlay" id="shareModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">Share · LBO Model — ACME Corp</div>
+            <div class="modal-sub">Manage access and generate share links with role-based permissions.</div>
+            <div class="form-row">
+                <label class="form-label">Invite by email</label>
+                <div style="display:flex;gap:8px">
+                    <input class="form-input" placeholder="analyst@goldmansachs.com" id="inviteEmail">
+                    <select class="form-select" style="width:120px" id="inviteRole">
+                        <option>Viewer</option>
+                        <option>Analyst</option>
+                        <option selected>Editor</option>
+                        <option>Director</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="sendInvite()">Invite</button>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Current access</label>
+                <div class="perm-row">
+                    <div>
+                        <div class="perm-name">J. Anderson (You)</div>
+                        <div class="perm-role">j.anderson@grydx.com</div>
+                    </div><span class="perm-badge role-director">Owner</span>
+                </div>
+                <div class="perm-row">
+                    <div>
+                        <div class="perm-name">M. Chen</div>
+                        <div class="perm-role">m.chen@firm.com</div>
+                    </div><span class="perm-badge role-editor">Editor</span>
+                </div>
+                <div class="perm-row">
+                    <div>
+                        <div class="perm-name">R. Patel</div>
+                        <div class="perm-role">r.patel@firm.com</div>
+                    </div><span class="perm-badge role-analyst">Analyst</span>
+                </div>
+                <div class="perm-row">
+                    <div>
+                        <div class="perm-name">S. Kim</div>
+                        <div class="perm-role">s.kim@firm.com</div>
+                    </div><span class="perm-badge role-viewer">Viewer</span>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Share link</label>
+                <div class="share-link-box">
+                    <span>https://grydx.app/m/lbo-acme-corp-v3</span>
+                    <button class="btn btn-ghost" style="padding:3px 9px;font-size:11px"
+                        onclick="showToast('🔗 Link copied to clipboard')">Copy</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('shareModal')">Cancel</button>
+                <button class="btn btn-primary"
+                    onclick="closeModal('shareModal');showToast('✓ Permissions saved')">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div class="overlay" id="exportModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Export</div>
+            <div class="modal-sub">Choose format for LBO Model v3.2</div>
+            <div id="exportOptions">
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div>
+                        <div class="check-lbl">Excel (.xlsx)</div>
+                        <div class="check-sub">Full formula fidelity, 98%+ accuracy</div>
+                    </div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div>
+                        <div class="check-lbl">PDF (formatted)</div>
+                        <div class="check-sub">Print-ready, branded layout</div>
+                    </div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div>
+                        <div class="check-lbl">CSV (data only)</div>
+                        <div class="check-sub">Raw values, no formulas</div>
+                    </div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div>
+                        <div class="check-lbl">SOX Audit Trail (PDF)</div>
+                        <div class="check-sub">SEC-ready, tamper-proof log</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('exportModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="doExport()">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPROVAL MODAL -->
+    <div class="overlay" id="approvalModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">Submit for Director Approval</div>
+            <div class="modal-sub">Changes will be locked pending director sign-off. All edits are logged in the SOX
+                audit trail.</div>
+            <div class="approve-list" id="approveList">
+                <div class="apr-item">
+                    <div class="apr-cell">E6 · IRR Formula</div>
+                    <div class="apr-from">j.anderson → M. Chen (Director)</div>
+                    <div class="apr-body">Updated IRR formula to include XNPV time-weighting for accurate hold period
+                        calculation.</div>
+                </div>
+                <div class="apr-item">
+                    <div class="apr-cell">F4 · Growth Rate Assumption</div>
+                    <div class="apr-from">s.kim → M. Chen (Director)</div>
+                    <div class="apr-body">Revenue growth rate updated from 11.2% to 11.8% based on revised Bloomberg
+                        consensus.</div>
+                </div>
+                <div class="apr-item">
+                    <div class="apr-cell">B3:G3 · Revenue Projections</div>
+                    <div class="apr-from">j.anderson → M. Chen (Director)</div>
+                    <div class="apr-body">FY2025E–FY2027E revenue updated to reflect revised top-line growth
+                        assumptions.</div>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top:16px">
+                <label class="form-label">Note to approver</label>
+                <textarea class="form-input" rows="2"
+                    placeholder="All formula changes validated by AI. Bloomberg data refreshed 14:37 today."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('approvalModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitApproval()">Submit 3 changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BLOOMBERG MODAL -->
+    <div class="overlay" id="bbgModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">⬤ Bloomberg Terminal Integration</div>
+            <div class="modal-sub">Real-time data refresh for ACME Corp model. Last sync: 14:37:05 today.</div>
+            <div style="margin-bottom:12px">
+                <div class="bbg-ticker"><span class="bbg-sym">ACME US Equity</span><span
+                        class="bbg-val">$48.20</span><span class="bbg-chg up">+1.4%</span></div>
+                <div class="bbg-ticker"><span class="bbg-sym">AAPL US Equity</span><span
+                        class="bbg-val">$189.50</span><span class="bbg-chg up">+0.8%</span></div>
+                <div class="bbg-ticker"><span class="bbg-sym">GS US Equity</span><span
+                        class="bbg-val">$412.30</span><span class="bbg-chg dn">–0.3%</span></div>
+                <div class="bbg-ticker"><span class="bbg-sym">MSFT US Equity</span><span
+                        class="bbg-val">$378.90</span><span class="bbg-chg up">+0.6%</span></div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Refresh fields</label>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Revenue &amp; EBITDA (FY2024A)</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">EV/EBITDA multiples</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Net debt &amp; leverage ratios</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div class="check-lbl">Analyst consensus estimates</div>
+                </div>
+            </div>
+            <div id="bbgProgress" style="display:none">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="bbgFill" style="width:0%"></div>
+                </div>
+                <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace" id="bbgStatus">
+                    Connecting…</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('bbgModal')">Cancel</button>
+                <button class="btn btn-amber" onclick="runBBGSync()">⬤ Sync Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEC EDGAR MODAL -->
+    <div class="overlay" id="secModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">📄 SEC Edgar Direct Access</div>
+            <div class="modal-sub">Pull financial data directly from SEC filings. Auto-mapped to your model schema.
+            </div>
+            <div class="form-row">
+                <label class="form-label">Company / CIK</label>
+                <input class="form-input" value="ACME Corp · CIK 0001234567" id="secSearch">
+            </div>
+            <div class="form-row">
+                <label class="form-label">Filing type</label>
+                <select class="form-select" id="secFiling">
+                    <option>10-K (Annual Report)</option>
+                    <option>10-Q (Quarterly)</option>
+                    <option>8-K (Current Report)</option>
+                    <option>DEF 14A (Proxy)</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Fiscal year</label>
+                <select class="form-select">
+                    <option selected>FY2024</option>
+                    <option>FY2023</option>
+                    <option>FY2022</option>
+                    <option>FY2021</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Extract fields</label>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Revenue</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">EBITDA &amp; Net Income</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Total debt &amp; cash</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div class="check-lbl">CapEx &amp; Free Cash Flow</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('secModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="runSECPull()">Pull Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VALIDATE MODAL -->
+    <div class="overlay" id="validateModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">✓ Formula Validation</div>
+            <div class="modal-sub">AI scanned 847 formulas across this model.</div>
+            <div style="display:flex;gap:10px;margin-bottom:16px">
+                <div
+                    style="flex:1;padding:12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;text-align:center">
+                    <div style="font-size:24px;font-weight:700;color:var(--green);font-family:'Instrument Serif',serif">
+                        845</div>
+                    <div style="font-size:11px;color:var(--text3)">Valid</div>
+                </div>
+                <div
+                    style="flex:1;padding:12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;text-align:center">
+                    <div style="font-size:24px;font-weight:700;color:var(--amber);font-family:'Instrument Serif',serif">
+                        1</div>
+                    <div style="font-size:11px;color:var(--text3)">Warnings</div>
+                </div>
+                <div
+                    style="flex:1;padding:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;text-align:center">
+                    <div style="font-size:24px;font-weight:700;color:var(--red);font-family:'Instrument Serif',serif">1
+                    </div>
+                    <div style="font-size:11px;color:var(--text3)">Errors</div>
+                </div>
+            </div>
+            <div class="warn-card">⚠ C11 · Sign error detected. Cash outflow appears positive (42.8). LBO convention
+                requires negative outflows.</div>
+            <div class="err-card">⊗ F8 · Circular reference: F8 → F12 → F8. Enable iterative calculation to resolve debt
+                schedule circularity.</div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('validateModal')">Close</button>
+                <button class="btn btn-amber" onclick="fixAllErrors()">Auto-fix all</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIND & REPLACE MODAL -->
+    <div class="overlay" id="findModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Find &amp; Replace</div>
+            <div class="form-row"><label class="form-label">Find</label><input class="form-input" id="findInput"
+                    placeholder="Search cells, formulas, values…"></div>
+            <div class="form-row"><label class="form-label">Replace with</label><input class="form-input"
+                    id="replaceInput" placeholder="Replacement text"></div>
+            <div class="check-row" onclick="toggleCheck(this)" style="margin-bottom:8px">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">Match formulas</div>
+            </div>
+            <div class="check-row" onclick="toggleCheck(this)" style="margin-bottom:8px">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">Match case</div>
+            </div>
+            <div id="findResult" style="font-size:11.5px;color:var(--text3);min-height:18px"></div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('findModal')">Close</button>
+                <button class="btn btn-ghost" onclick="doFind()">Find</button>
+                <button class="btn btn-primary" onclick="doReplace()">Replace All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW MODEL MODAL -->
+    <div class="overlay" id="newModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">New Model</div>
+            <div class="modal-sub">Start from a blank sheet or use an industry-standard template.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="padding:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:border-color .15s"
+                    onmouseenter="this.style.borderColor='var(--accent)'"
+                    onmouseleave="this.style.borderColor='var(--border2)'" onclick="createModel('Blank')">
+                    <div style="font-size:22px;margin-bottom:6px">🗋</div>
+                    <div style="font-weight:600;font-size:13px">Blank Sheet</div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:3px">Start from scratch</div>
+                </div>
+                <div style="padding:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:border-color .15s"
+                    onmouseenter="this.style.borderColor='var(--accent)'"
+                    onmouseleave="this.style.borderColor='var(--border2)'" onclick="createModel('LBO Model')">
+                    <div style="font-size:22px;margin-bottom:6px">📊</div>
+                    <div style="font-weight:600;font-size:13px">LBO Model</div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:3px">Full leveraged buyout</div>
+                </div>
+                <div style="padding:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:border-color .15s"
+                    onmouseenter="this.style.borderColor='var(--accent)'"
+                    onmouseleave="this.style.borderColor='var(--border2)'" onclick="createModel('DCF Model')">
+                    <div style="font-size:22px;margin-bottom:6px">📈</div>
+                    <div style="font-weight:600;font-size:13px">DCF Model</div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:3px">Discounted cash flow</div>
+                </div>
+                <div style="padding:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:border-color .15s"
+                    onmouseenter="this.style.borderColor='var(--accent)'"
+                    onmouseleave="this.style.borderColor='var(--border2)'" onclick="createModel('M&A Accretion')">
+                    <div style="font-size:22px;margin-bottom:6px">🤝</div>
+                    <div style="font-weight:600;font-size:13px">M&amp;A Accretion</div>
+                    <div style="font-size:11px;color:var(--text3);margin-top:3px">Merger analysis</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('newModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VERSION HISTORY MODAL -->
+    <div class="overlay" id="versionModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">Version History</div>
+            <div class="modal-sub">All versions are immutable and SOX-compliant.</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(79,127,255,.08);border:1px solid rgba(79,127,255,.2);border-radius:7px">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">v3.2 — Current</div>
+                        <div style="font-size:11px;color:var(--text3)">Today · 14:38 · j.anderson</div>
+                        <div style="font-size:11.5px;margin-top:3px">IRR formula updated, Bloomberg refresh</div>
+                    </div>
+                    <span class="perm-badge" style="background:rgba(79,127,255,.15);color:var(--accent2)">Current</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface3);border:1px solid var(--border);border-radius:7px;cursor:pointer"
+                    onclick="restoreVersion('v3.1')">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">v3.1</div>
+                        <div style="font-size:11px;color:var(--text3)">Today · 14:28 · m.chen</div>
+                        <div style="font-size:11.5px;margin-top:3px;color:var(--text2)">Approved by M.Chen</div>
+                    </div>
+                    <button class="btn btn-ghost" style="padding:3px 8px;font-size:10.5px">Restore</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface3);border:1px solid var(--border);border-radius:7px;cursor:pointer"
+                    onclick="restoreVersion('v3.0')">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">v3.0</div>
+                        <div style="font-size:11px;color:var(--text3)">Yesterday · 18:02 · j.anderson</div>
+                        <div style="font-size:11.5px;margin-top:3px;color:var(--text2)">Debt schedule finalised</div>
+                    </div>
+                    <button class="btn btn-ghost" style="padding:3px 8px;font-size:10.5px">Restore</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface3);border:1px solid var(--border);border-radius:7px;cursor:pointer"
+                    onclick="restoreVersion('v2.9')">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">v2.9</div>
+                        <div style="font-size:11px;color:var(--text3)">Yesterday · 11:30 · s.kim</div>
+                        <div style="font-size:11.5px;margin-top:3px;color:var(--text2)">Entry assumptions updated</div>
+                    </div>
+                    <button class="btn btn-ghost" style="padding:3px 8px;font-size:10.5px">Restore</button>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('versionModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLLAB MODAL -->
+    <div class="overlay" id="collabModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Active Collaborators</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:9px;background:var(--surface3);border-radius:7px">
+                    <div class="av a1" style="margin:0;flex-shrink:0">JA</div>
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">J. Anderson (You)</div>
+                        <div style="font-size:11px;color:var(--text3)">● Cell E6 · Owner</div>
+                    </div>
+                    <span class="perm-badge role-director">Owner</span>
+                </div>
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:9px;background:var(--surface3);border-radius:7px">
+                    <div class="av a2" style="margin:0;flex-shrink:0">MC</div>
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">M. Chen</div>
+                        <div style="font-size:11px;color:var(--green)">● Cell B11 · Active</div>
+                    </div>
+                    <span class="perm-badge role-editor">Editor</span>
+                </div>
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:9px;background:var(--surface3);border-radius:7px">
+                    <div class="av a3" style="margin:0;flex-shrink:0">RP</div>
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">R. Patel</div>
+                        <div style="font-size:11px;color:var(--text3)">○ Viewing · idle 2m</div>
+                    </div>
+                    <span class="perm-badge role-analyst">Analyst</span>
+                </div>
+                <div
+                    style="display:flex;align-items:center;gap:10px;padding:9px;background:var(--surface3);border-radius:7px">
+                    <div class="av a4" style="margin:0;flex-shrink:0">SK</div>
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:12.5px">S. Kim</div>
+                        <div style="font-size:11px;color:var(--text3)">○ Away</div>
+                    </div>
+                    <span class="perm-badge role-viewer">Viewer</span>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('collabModal')">Close</button><button class="btn btn-primary"
+                    onclick="closeModal('collabModal');showModal('shareModal')">Manage access</button></div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="overlay" id="settingsModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">⚙ Settings</div>
+            <div class="form-row"><label class="form-label">Default number format</label><select class="form-select">
+                    <option>Currency ($)</option>
+                    <option selected>Number with commas</option>
+                    <option>Percentage</option>
+                </select></div>
+            <div class="form-row"><label class="form-label">Auto-save interval</label><select class="form-select">
+                    <option>Every 30 seconds</option>
+                    <option selected>Every 1 minute</option>
+                    <option>Every 5 minutes</option>
+                    <option>Manual only</option>
+                </select></div>
+            <div class="form-row"><label class="form-label">Bloomberg refresh</label><select class="form-select">
+                    <option selected>Real-time</option>
+                    <option>Every hour</option>
+                    <option>Daily at open</option>
+                    <option>Manual only</option>
+                </select></div>
+            <div class="form-row"><label class="form-label">AI features</label>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Auto formula suggestions</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Real-time error detection</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Natural language data pull</div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('settingsModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="closeModal('settingsModal');showToast('✓ Settings saved')">Save</button></div>
+        </div>
+    </div>
+
+    <!-- KPI DETAIL MODAL -->
+    <div class="overlay" id="kpiModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title" id="kpiModalTitle">IRR</div>
+            <div style="text-align:center;padding:20px 0">
+                <div style="font-family:'Instrument Serif',serif;font-size:48px;color:var(--green)" id="kpiModalVal">
+                    22.4%</div>
+                <div class="kpi-delta up" style="font-size:13px;margin-top:4px" id="kpiModalDelta">↑ +1.2pp vs base case
+                </div>
+            </div>
+            <div style="font-size:12.5px;color:var(--text2);line-height:1.6" id="kpiModalDesc"></div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('kpiModal')">Close</button><button class="btn btn-ai"
+                    onclick="closeModal('kpiModal');fillPrompt('Explain the IRR calculation and how to improve it');focusChat()">✦
+                    Ask AI</button></div>
+        </div>
+    </div>
+
+    <!-- ABOUT MODAL -->
+    <div class="overlay" id="aboutModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm" style="text-align:center">
+            <div style="font-family:'Instrument Serif',serif;font-size:32px;margin-bottom:8px">Gryd<span
+                    style="color:var(--accent2)">x</span></div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">The enterprise spreadsheet
+                for investment banking, private equity, and high finance.</div>
+            <div
+                style="display:flex;justify-content:center;gap:16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:16px">
+                <span>v3.2.1</span><span>·</span><span>SOX Compliant</span><span>·</span><span>Private Beta</span>
+            </div>
+            <div class="modal-footer" style="justify-content:center;border:none;padding-top:0"><button
+                    class="btn btn-primary" onclick="closeModal('aboutModal')">Close</button></div>
+        </div>
+    </div>
+
+    <!-- IMPORT INPUT -->
+    <input type="file" id="importInput" accept=".xlsx,.csv,.xls" style="display:none" onchange="handleImport(this)">
+
+    <!-- SENSITIVITY TABLE MODAL -->
+    <div class="overlay" id="sensModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-lg">
+            <div class="modal-title">Sensitivity Analysis — IRR vs Entry Multiple</div>
+            <div class="modal-sub">2-way table: Entry EV/EBITDA (rows) × EBITDA Margin (cols). Highlighted cell = base
+                case.</div>
+            <table class="sens-table" id="sensTable"></table>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('sensModal')">Close</button>
+                <button class="btn btn-primary"
+                    onclick="closeModal('sensModal');showToast('✓ Sensitivity table inserted at H1:N8')">Insert to
+                    sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT AUDIT MODAL -->
+    <div class="overlay" id="exportAuditModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Export Audit Trail</div>
+            <div class="modal-sub">SOX-compliant, tamper-proof export for SEC / Fed review.</div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box checked">✓</div>
+                <div class="check-lbl">Full audit log (PDF)</div>
+            </div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box checked">✓</div>
+                <div class="check-lbl">Cryptographic hash verification</div>
+            </div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">Include formula snapshots</div>
+            </div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">User identity attestation</div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('exportAuditModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="closeModal('exportAuditModal');showToast('✓ Audit trail exported — SOX-compliant PDF')">Export
+                    PDF</button></div>
+        </div>
+    </div>
+
+    <!-- COMMENT MODAL -->
+    <div class="overlay" id="commentModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Add Comment</div>
+            <div class="modal-sub" id="commentCellRef">Cell E6</div>
+            <div class="form-row"><textarea class="form-input" rows="3" id="commentText"
+                    placeholder="Add a note or flag for review…"></textarea></div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">Tag as review required</div>
+            </div>
+            <div class="check-row" onclick="toggleCheck(this)">
+                <div class="check-box">✓</div>
+                <div class="check-lbl">Notify team</div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('commentModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="addComment()">Post comment</button></div>
+        </div>
+    </div>
+
+    <!-- PERMISSIONS MODAL -->
+    <div class="overlay" id="permModal" onclick="overlayClose(event,this)">
+        <div class="modal">
+            <div class="modal-title">🔒 Permissions &amp; Governance</div>
+            <div class="modal-sub">Cell-level and column-level access control for this model.</div>
+            <div class="form-row">
+                <label class="form-label">Protected ranges</label>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                    <div
+                        style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface3);border-radius:6px">
+                        <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2)">B3:G8 (Income
+                            stmt)</span>
+                        <select class="form-select" style="width:130px">
+                            <option>Director only</option>
+                            <option selected>Analysts + Directors</option>
+                            <option>All</option>
+                        </select>
+                    </div>
+                    <div
+                        style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface3);border-radius:6px">
+                        <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2)">E6, E19
+                            (Returns)</span>
+                        <select class="form-select" style="width:130px">
+                            <option selected>Director only</option>
+                            <option>Analysts + Directors</option>
+                            <option>All</option>
+                        </select>
+                    </div>
+                    <div
+                        style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface3);border-radius:6px">
+                        <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2)">B26:F29
+                            (Debt)</span>
+                        <select class="form-select" style="width:130px">
+                            <option selected>Director only</option>
+                            <option>Analysts + Directors</option>
+                            <option>All</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <label class="form-label">Approval required for</label>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Formula changes in returns section</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">Debt assumption changes</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div class="check-lbl">Any change &gt;5% impact on IRR</div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('permModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="closeModal('permModal');showToast('✓ Permissions saved')">Save</button></div>
+        </div>
+    </div>
+
+    <!-- REUTERS MODAL -->
+    <div class="overlay" id="reutersModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">📡 Reuters / LSEG Data</div>
+            <div class="modal-sub">Pull Refinitiv data feeds, LSEG analytics, and Reuters news sentiment.</div>
+            <div class="form-row"><label class="form-label">Ticker / RIC</label><input class="form-input" value="ACME.N"
+                    id="rtrTicker"></div>
+            <div class="form-row"><label class="form-label">Data fields</label>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">EBITDA consensus estimates</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box checked">✓</div>
+                    <div class="check-lbl">EV/EBITDA peer multiples</div>
+                </div>
+                <div class="check-row" onclick="toggleCheck(this)">
+                    <div class="check-box">✓</div>
+                    <div class="check-lbl">News sentiment score</div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('reutersModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="closeModal('reutersModal');showToast('✓ Reuters data pulled — 6 cells updated')">Pull
+                    Data</button></div>
+        </div>
+    </div>
+
+    <!-- COLOR MODAL -->
+    <div class="overlay" id="colorModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">🎨 Fill Color</div>
+            <div class="modal-sub" id="colorCellRef">Cell E6</div>
+            <div class="color-swatches" id="colorSwatches"></div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('colorModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="applyColor()">Apply</button></div>
+        </div>
+    </div>
+
+    <!-- TEXT COLOR MODAL -->
+    <div class="overlay" id="textColorModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-sm">
+            <div class="modal-title">Text Color</div>
+            <div class="color-swatches" id="textColorSwatches"></div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('textColorModal')">Cancel</button><button class="btn btn-primary"
+                    onclick="applyTextColor()">Apply</button></div>
+        </div>
+    </div>
+
+    <!-- FULL AUDIT TRAIL MODAL -->
+    <div class="overlay" id="auditTrailModal" onclick="overlayClose(event,this)">
+        <div class="modal modal-lg">
+            <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
+                <span>Full Audit Trail · LBO Model v3.2</span>
+                <span class="live-badge" style="font-size:9.5px">
+                    <div class="live-dot"></div>Live
+                </span>
+            </div>
+            <div class="modal-sub">All entries are cryptographically signed and SOX-compliant.</div>
+            <div id="fullAuditList" style="max-height:380px;overflow-y:auto"></div>
+            <div class="modal-footer"><button class="btn btn-ghost"
+                    onclick="closeModal('auditTrailModal')">Close</button><button class="btn btn-primary"
+                    onclick="closeModal('auditTrailModal');showToast('✓ Full audit trail exported (PDF)')">Export
+                    PDF</button></div>
+        </div>
+    </div>
+
+    <script>
+        // ══════════════════════════════════════════
+        //  DATA
+        // ══════════════════════════════════════════
+        const COLS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        // Sparse cell data store: cellData['E6'] = { value, formula, bold, italic, underline, align, color, bg }
+        const cellData = {
+            'E6': { value: '22.4%', formula: '=IRR(C8:C15, 0.1) * XNPV(E4, D8:D15, B8:B15)', color: 'var(--green)' },
+            'B3': { value: '$815M', formula: '=Bloomberg("ACME US Equity","SALES","FY2022A")' },
+            'C3': { value: '$921M', formula: '=Bloomberg("ACME US Equity","SALES","FY2023A")' },
+            'D3': { value: '$1,048M', formula: '=Bloomberg("ACME US Equity","SALES","FY2024A")' },
+            'E3': { value: '$1,202M', formula: '=C3*F4+C3' },
+            'F4': { value: '15.0%', formula: '=E4*1.18' },
+        };
+
+        const sheetRows = [
+            { r: 1, type: 'sec', cells: ['INCOME STATEMENT', '', '', '', '', '', '', ''] },
+            { r: 2, type: 'hdr', cells: ['Metric', 'FY2022A', 'FY2023A', 'FY2024A', 'FY2025E', 'FY2026E', 'FY2027E', ''] },
+            {
+                r: 3, type: 'dat', cells: ['Revenue', '$815M', '$921M', '$1,048M', '$1,202M', '$1,382M', '$1,589M', ''],
+                fmts: ['lbl', 'num', 'num', 'num', 'hi', 'num', 'num', ''], flags: { E: 'ai' }
+            },
+            {
+                r: 4, type: 'dat', cells: ['Revenue Growth', '—', '12.9%', '13.8%', '14.6%', '15.0%', '15.0%', ''],
+                fmts: ['lbl', '', 'pos', 'pos', 'pos', 'pos', 'pos', '']
+            },
+            {
+                r: 5, type: 'dat', cells: ['EBITDA', '$196M', '$238M', '$272M', '$319M', '$373M', '$439M', ''],
+                fmts: ['lbl', 'num', 'num', 'num', 'num', 'num', 'num', '']
+            },
+            {
+                r: 6, type: 'dat', cells: ['EBITDA Margin', '24.1%', '25.8%', '26.0%', '26.5%', '27.0%', '27.6%', ''],
+                fmts: ['lbl', '', '', '', 'hi', '', '', '']
+            },
+            {
+                r: 7, type: 'dat', cells: ['D&A', '($48M)', '($54M)', '($61M)', '($69M)', '($79M)', '($91M)', ''],
+                fmts: ['lbl', 'neg', 'neg', 'neg', 'neg', 'neg', 'neg', '']
+            },
+            {
+                r: 8, type: 'dat', cells: ['EBIT', '$148M', '$184M', '$211M', '$250M', '$294M', '$348M', ''],
+                fmts: ['lbl', 'num', 'num', 'num', 'hi', 'num', 'num', ''], bold: true
+            },
+            { r: 9, type: 'blk' },
+            { r: 10, type: 'sec', cells: ['CASH FLOWS & RETURNS', '', '', '', '', '', '', ''] },
+            {
+                r: 11, type: 'dat', cells: ['Entry (Y0)', '($630M)', '', '', '', '', '', ''],
+                fmts: ['lbl', 'neg', '', '', '', '', '', ''], flags: { B: 'collab' }
+            },
+            {
+                r: 12, type: 'dat', cells: ['FCF Y1', '($42.8)', '', '', '', '', '', ''],
+                fmts: ['lbl', 'neg', '', '', '', '', '', ''], flags: { B: 'err' }
+            },
+            {
+                r: 13, type: 'dat', cells: ['FCF Y2', '$68M', '', '', '', '', '', ''],
+                fmts: ['lbl', 'num', '', '', '', '', '', '']
+            },
+            {
+                r: 14, type: 'dat', cells: ['FCF Y3', '$104M', '', '', '', '', '', ''],
+                fmts: ['lbl', 'num', '', '', '', '', '', '']
+            },
+            {
+                r: 15, type: 'dat', cells: ['FCF Y4', '$147M', '', '', '', '', '', ''],
+                fmts: ['lbl', 'num', '', '', '', '', '', '']
+            },
+            {
+                r: 16, type: 'dat', cells: ['Exit (Y5)', '$1,952M', '', '', '', '', '', ''],
+                fmts: ['lbl', 'hi', '', '', '', '', '', '']
+            },
+            { r: 17, type: 'blk' },
+            { r: 18, type: 'sec', cells: ['RETURNS ANALYSIS', '', '', '', '', '', '', ''] },
+            {
+                r: 19, type: 'dat', cells: ['IRR', '', '', '', '22.4%', '', '', ''],
+                fmts: ['lbl', '', '', '', 'pos', '', '', ''], flags: { E: 'ai' }
+            },
+            {
+                r: 20, type: 'dat', cells: ['MOIC', '', '', '', '3.1×', '', '', ''],
+                fmts: ['lbl', '', '', '', 'hi', '', '', '']
+            },
+            {
+                r: 21, type: 'dat', cells: ['Entry EV/EBITDA', '10.8×', '', '', '', '', '', ''],
+                fmts: ['lbl', 'num', '', '', '', '', '', '']
+            },
+            {
+                r: 22, type: 'dat', cells: ['Exit EV/EBITDA', '', '', '', '', '9.2×', '', ''],
+                fmts: ['lbl', '', '', '', '', 'num', '', '']
+            },
+            { r: 23, type: 'blk' },
+            { r: 24, type: 'sec', cells: ['DEBT SCHEDULE', '', '', '', '', '', '', ''] },
+            { r: 25, type: 'hdr', cells: ['Tranche', 'Amount', 'Rate', 'Spread', 'Maturity', 'Balance Y5', '', ''] },
+            {
+                r: 26, type: 'dat', cells: ['Term Loan A', '$840M', '6.5%', 'SOFR+250', '7Y', '$420M', '', ''],
+                fmts: ['lbl', 'num', '', '', '', 'num', '', '']
+            },
+            {
+                r: 27, type: 'dat', cells: ['Term Loan B', '$420M', '7.2%', 'SOFR+325', '8Y', '$128M', '', ''],
+                fmts: ['lbl', 'num', '', '', '', 'num', '', '']
+            },
+            {
+                r: 28, type: 'dat', cells: ['Revolver', '$150M', 'SOFR+225', '—', '5Y', '$0', '', ''],
+                fmts: ['lbl', 'num', '', '', '', 'pos', '', '']
+            },
+            {
+                r: 29, type: 'dat', cells: ['Total Debt', '$1,410M', '6.8%', '', '', '$548M', '', ''],
+                fmts: ['lbl', 'hi', '', '', '', 'hi', '', ''], bold: true
+            },
+            { r: 30, type: 'blk' },
+            { r: 31, type: 'sec', cells: ['SOURCES & USES', '', '', '', '', '', '', ''] },
+            { r: 32, type: 'hdr', cells: ['Source', 'Amount', '%', '', 'Use', 'Amount', '%', ''] },
+            {
+                r: 33, type: 'dat', cells: ['Term Loan A', '$840M', '40%', '', 'EV Purchase Price', '$2,100M', '100%', ''],
+                fmts: ['lbl', 'num', '', '', 'lbl', 'hi', '', '']
+            },
+            {
+                r: 34, type: 'dat', cells: ['Term Loan B', '$420M', '20%', '', 'Financing Fees', '$28M', '1.3%', ''],
+                fmts: ['lbl', 'num', '', '', 'lbl', 'num', '', '']
+            },
+            {
+                r: 35, type: 'dat', cells: ['Equity', '$630M', '30%', '', 'OID / Discount', '$8M', '0.4%', ''],
+                fmts: ['lbl', 'num', '', '', 'lbl', 'neg', '', '']
+            },
+            {
+                r: 36, type: 'dat', cells: ['Revolver Draw', '$150M', '7%', '', 'Cash to Balance Sheet', '$14M', '0.7%', ''],
+                fmts: ['lbl', 'num', '', '', 'lbl', 'num', '', '']
+            },
+            {
+                r: 37, type: 'dat', cells: ['Cash on Hand', '$68M', '3%', '', '', '', '', ''],
+                fmts: ['lbl', 'num', '', '', '', '', '', '']
+            },
+            {
+                r: 38, type: 'dat', cells: ['Total Sources', '$2,108M', '100%', '', 'Total Uses', '$2,150M', '100%', ''],
+                fmts: ['lbl', 'hi', '', '', 'lbl', 'hi', '', ''], bold: true
+            },
+        ];
+
+        const auditLog = [
+            { time: '14:38:21', user: 'j.anderson', desc: 'E6 → IRR(C8:C15)*XNPV(E4)', type: 't-fml', label: 'FORMULA' },
+            { time: '14:37:05', user: 'm.chen', desc: 'D4:D6 Bloomberg AAPL/MSFT/GS', type: 't-dat', label: 'DATA' },
+            { time: '14:35:44', user: 'r.patel', desc: 'C11: 42.8 → -42.8 (sign fix)', type: 't-val', label: 'VALUE' },
+            { time: '14:34:10', user: 'j.anderson', desc: 'B3: Deleted "Draft v2"', type: 't-del', label: 'DELETE' },
+            { time: '14:31:58', user: 's.kim', desc: 'F4: =E4*1.12 → =E4*1.18', type: 't-fml', label: 'FORMULA' },
+            { time: '14:28:33', user: 'm.chen', desc: 'APPROVED · v4.1 → v4.2', type: 't-apr', label: 'APPROVE' },
+            { time: '14:20:11', user: 'j.anderson', desc: 'C8:C15: Cash flow projections', type: 't-val', label: 'VALUE' },
+            { time: '14:15:04', user: 'r.patel', desc: 'E4: Discount rate 9.5% → 10.1%', type: 't-val', label: 'VALUE' },
+            { time: '14:08:22', user: 's.kim', desc: 'B26: $840M → $840M (confirmed)', type: 't-val', label: 'VALUE' },
+            { time: '13:55:17', user: 'm.chen', desc: 'Model shared with R.Patel', type: 't-dat', label: 'SHARE' },
+            { time: '13:40:00', user: 'j.anderson', desc: 'Model v3.1 created from template', type: 't-fml', label: 'CREATE' },
+        ];
+
+        const errorsData = [
+            { id: 'err1', cell: 'C11', type: '⚠ Sign Error', color: 'var(--amber)', desc: 'Cash outflow appears positive (42.8). LBO convention requires negative outflows for Year 1 FCF.', fixed: false },
+            { id: 'err2', cell: 'F8', type: '⊗ Circular Reference', color: 'var(--red)', desc: 'F8 → F12 → F8 (debt service iterative calculation). Enable iterative computation to resolve.', fixed: false },
+        ];
+
+        // ══════════════════════════════════════════
+        //  STATE
+        // ══════════════════════════════════════════
+        let activeCell = 'E6';
+        let selectedCol = 'E';
+        let clipboard = null;
+        let undoStack = [];
+        let redoStack = [];
+        let formatState = { bold: false, italic: false, underline: false, strikethrough: false, align: 'center', zoom: 1 };
+        let frozen = false, gridlines = true, sidebarVisible = true, kpiVisible = true, filterOn = false;
+        let selectedColor = '#1e2330';
+        let selectedTextColor = '#e8ecf4';
+        let errorsFixed = { err1: false, err2: false };
+        let chatHistory = [];
+
+        // ══════════════════════════════════════════
+        //  SHEET BUILD
+        // ══════════════════════════════════════════
+        function buildSheet() {
+            const tbody = document.getElementById('sheetBody');
+            tbody.innerHTML = '';
+            sheetRows.forEach(row => {
+                const tr = document.createElement('tr');
+                if (row.type === 'sec') tr.classList.add('sec-hdr');
+                if (row.type === 'hdr') tr.classList.add('row-hdr-row');
+
+                // Row header
+                const rh = document.createElement('td');
+                rh.className = 'rhdr';
+                rh.id = `rh${row.r}`;
+                rh.textContent = row.r;
+                rh.onclick = () => selectRow(row.r);
+                tr.appendChild(rh);
+
+                if (row.type === 'blk') {
+                    COLS.forEach(c => {
+                        const td = mkCell(c, row.r, '', '', row);
+                        tr.appendChild(td);
+                    });
+                } else {
+                    COLS.forEach((c, ci) => {
+                        const val = row.cells ? (row.cells[ci] || '') : '';
+                        const fmt = row.fmts ? (row.fmts[ci] || '') : '';
+                        const td = mkCell(c, row.r, val, fmt, row);
+                        tr.appendChild(td);
+                    });
+                }
+                tbody.appendChild(tr);
+            });
+            updateActiveCell();
+        }
+
+        function mkCell(col, rowNum, val, fmt, rowDef) {
+            const id = `${col}${rowNum}`;
+            const td = document.createElement('td');
+            td.className = 'c';
+            td.id = `cell-${id}`;
+            td.dataset.row = rowNum;
+            td.dataset.col = col;
+
+            if (val) {
+                const sp = document.createElement('span');
+                sp.className = fmtClass(fmt);
+                if (rowDef && rowDef.bold) sp.classList.add('cbold');
+                sp.textContent = val;
+                td.appendChild(sp);
+            }
+
+            // Flags
+            const flags = rowDef && rowDef.flags ? rowDef.flags : {};
+            if (flags[col] === 'err') {
+                const f = document.createElement('div'); f.className = 'err-flag'; td.appendChild(f);
+            } else if (flags[col] === 'ai') {
+                const f = document.createElement('div'); f.className = 'ai-flag'; td.appendChild(f);
+            } else if (flags[col] === 'collab') {
+                const ring = document.createElement('div');
+                ring.className = 'collab-ring'; ring.style.borderColor = '#2f9e44';
+                const lbl = document.createElement('div');
+                lbl.className = 'collab-name'; lbl.style.background = '#2f9e44'; lbl.textContent = 'M.Chen';
+                ring.appendChild(lbl); td.appendChild(ring);
+            }
+
+            td.addEventListener('click', e => { e.stopPropagation(); activateCell(id); });
+            td.addEventListener('dblclick', () => startEdit(id));
+            td.addEventListener('contextmenu', e => showCtx(e, id));
+
+            return td;
+        }
+
+        function fmtClass(fmt) {
+            const map = { lbl: 'clbl', pos: 'cn pos', neg: 'cn neg', hi: 'cn hi', num: 'cn norm', fml: 'cfml' };
+            return map[fmt] || '';
+        }
+
+        // ══════════════════════════════════════════
+        //  CELL ACTIVATION & NAVIGATION
+        // ══════════════════════════════════════════
+        function activateCell(id) {
+            const prev = document.getElementById(`cell-${activeCell}`);
+            if (prev) prev.classList.remove('active');
+            activeCell = id;
+            const el = document.getElementById(`cell-${id}`);
+            if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+            document.getElementById('cellRefBox').textContent = id;
+            const cd = cellData[id];
+            const fi = document.getElementById('formulaInput');
+            if (cd && cd.formula) { fi.value = cd.formula; fi.style.color = 'var(--purple)'; }
+            else { fi.value = el ? (el.querySelector('span')?.textContent || '') : ''; fi.style.color = 'var(--text)'; }
+            updateStatus(id);
+            updateFmtButtons(id);
+            document.getElementById('commentCellRef').textContent = `Cell ${id}`;
+            document.getElementById('colorCellRef').textContent = `Cell ${id}`;
+        }
+
+        function updateActiveCell() { activateCell(activeCell); }
+
+        function updateStatus(id) {
+            document.getElementById('statCell').textContent = id;
+            const el = document.getElementById(`cell-${id}`);
+            const val = el?.querySelector('span')?.textContent || '';
+            const num = parseFloat(val.replace(/[^0-9.\-]/g, ''));
+            document.getElementById('statSum').textContent = isNaN(num) ? val : val;
+            document.getElementById('statAvg').textContent = isNaN(num) ? '—' : val;
+            document.getElementById('statCount').textContent = '1';
+        }
+
+        function updateFmtButtons(id) {
+            const cd = cellData[id] || {};
+            ['Bold', 'Italic', 'Underline', 'Strike'].forEach(f => {
+                const btn = document.getElementById(`btn${f}`);
+                if (btn) btn.classList.toggle('toggled', !!cd[f.toLowerCase()]);
+            });
+        }
+
+        document.addEventListener('keydown', e => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            const moves = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+            if (moves[e.key]) {
+                e.preventDefault();
+                const [dr, dc] = moves[e.key];
+                const col = activeCell[0], row = parseInt(activeCell.slice(1));
+                const ci = COLS.indexOf(col);
+                const nc = COLS[Math.max(0, Math.min(COLS.length - 1, ci + dc))];
+                const nr = Math.max(1, Math.min(38, row + dr));
+                activateCell(`${nc}${nr}`);
+            }
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                const el = document.getElementById(`cell-${activeCell}`);
+                const sp = el?.querySelector('span');
+                if (sp && document.activeElement.tagName !== 'INPUT') { pushUndo(); sp.textContent = ''; showToast('✓ Cell cleared'); }
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') doCopy();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'x') doCut();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') doPaste();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') doUndo();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') doRedo();
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveFile(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') applyFmt('bold');
+            if ((e.ctrlKey || e.metaKey) && e.key === 'i') applyFmt('italic');
+            if ((e.ctrlKey || e.metaKey) && e.key === 'h') { e.preventDefault(); showModal('findModal'); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); showModal('newModal'); }
+            if (e.key === 'Enter') startEdit(activeCell);
+            if (e.key === 'Escape') { closeAllMenus(); }
+        });
+
+        // ══════════════════════════════════════════
+        //  CELL EDITING
+        // ══════════════════════════════════════════
+        function startEdit(id) {
+            const el = document.getElementById(`cell-${id}`);
+            if (!el) return;
+            let ed = el.querySelector('.cell-editor');
+            if (!ed) {
+                ed = document.createElement('input');
+                ed.className = 'cell-editor';
+                el.appendChild(ed);
+            }
+            const sp = el.querySelector('span');
+            ed.value = sp ? sp.textContent : '';
+            ed.style.display = 'block';
+            ed.focus();
+            ed.select();
+            ed.onkeydown = (e) => {
+                if (e.key === 'Enter') { commitEdit(id, ed.value); ed.style.display = 'none'; }
+                if (e.key === 'Escape') { ed.style.display = 'none'; }
+                e.stopPropagation();
+            };
+            ed.onblur = () => { if (ed.style.display !== 'none') { commitEdit(id, ed.value); ed.style.display = 'none'; } };
+        }
+
+        function commitEdit(id, val) {
+            pushUndo();
+            const el = document.getElementById(`cell-${id}`);
+            if (!el) return;
+            let sp = el.querySelector('span');
+            if (!sp) { sp = document.createElement('span'); el.insertBefore(sp, el.firstChild); }
+            sp.textContent = val;
+            addAuditEntry(id, val);
+            showToast(`✓ ${id} updated`);
+            updateStatus(id);
+        }
+
+        function commitFormula(val) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            if (!el) return;
+            pushUndo();
+            let sp = el.querySelector('span');
+            if (!sp) { sp = document.createElement('span'); el.appendChild(sp); }
+            sp.textContent = val.startsWith('=') ? `[formula]` : val;
+            if (val.startsWith('=')) {
+                if (!cellData[activeCell]) cellData[activeCell] = {};
+                cellData[activeCell].formula = val;
+                document.getElementById('formulaInput').style.color = 'var(--purple)';
+            }
+            addAuditEntry(activeCell, val);
+            showToast(`✓ ${activeCell} formula set`);
+        }
+
+        function formulaBarKey(e) {
+            if (e.key === 'Enter') { e.preventDefault(); commitFormula(e.target.value); }
+            if (e.key === 'Escape') { activateCell(activeCell); }
+        }
+
+        // ══════════════════════════════════════════
+        //  FORMAT
+        // ══════════════════════════════════════════
+        function applyFmt(type) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (!sp) return;
+            if (!cellData[activeCell]) cellData[activeCell] = {};
+            if (type === 'bold') {
+                const on = sp.style.fontWeight === '700';
+                sp.style.fontWeight = on ? '' : '700';
+                cellData[activeCell].bold = !on;
+                document.getElementById('btnBold').classList.toggle('toggled', !on);
+                showToast(!on ? '✓ Bold applied' : '✓ Bold removed');
+            } else if (type === 'italic') {
+                const on = sp.style.fontStyle === 'italic';
+                sp.style.fontStyle = on ? '' : 'italic';
+                document.getElementById('btnItalic').classList.toggle('toggled', !on);
+                showToast(!on ? '✓ Italic applied' : '✓ Italic removed');
+            } else if (type === 'underline') {
+                const on = sp.style.textDecoration.includes('underline');
+                sp.style.textDecoration = on ? '' : 'underline';
+                document.getElementById('btnUnderline').classList.toggle('toggled', !on);
+                showToast(!on ? '✓ Underline applied' : '✓ Underline removed');
+            } else if (type === 'strikethrough') {
+                const on = sp.style.textDecoration.includes('line-through');
+                sp.style.textDecoration = on ? '' : 'line-through';
+                showToast(!on ? '✓ Strikethrough applied' : '✓ Strikethrough removed');
+            }
+        }
+
+        function setAlign(dir) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (sp) { sp.style.textAlign = dir; sp.style.display = 'block'; }
+            ['L', 'C', 'R'].forEach(d => document.getElementById(`btnAlign${d}`)?.classList.remove('on'));
+            document.getElementById(`btnAlign${dir[0].toUpperCase()}`)?.classList.add('on');
+            showToast(`✓ Align ${dir}`);
+        }
+
+        function applyNumFmt(fmt) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (!sp) return;
+            const raw = parseFloat(sp.textContent.replace(/[^0-9.\-]/g, ''));
+            if (isNaN(raw)) { showToast('⚠ No numeric value in cell'); return; }
+            const fmts = { currency: `$${raw.toLocaleString('en-US', { minimumFractionDigits: 1 })}`, pct: `${(raw).toFixed(1)}%`, comma: raw.toLocaleString('en-US'), 'dec+': raw.toFixed(2), 'dec-': raw.toFixed(0) };
+            sp.textContent = fmts[fmt] || sp.textContent;
+            showToast(`✓ Format applied: ${fmt}`);
+        }
+
+        function applyFont(f) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (sp) { sp.style.fontFamily = f; showToast(`✓ Font: ${f}`); }
+        }
+
+        function applySize(s) {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (sp) { sp.style.fontSize = s + 'px'; showToast(`✓ Size: ${s}px`); }
+        }
+
+        function applyColor() {
+            const el = document.getElementById(`cell-${activeCell}`);
+            if (el) { el.style.background = selectedColor; showToast('✓ Fill color applied'); }
+            closeModal('colorModal');
+        }
+
+        function applyTextColor() {
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (sp) { sp.style.color = selectedTextColor; showToast('✓ Text color applied'); }
+            closeModal('textColorModal');
+        }
+
+        // ══════════════════════════════════════════
+        //  CLIPBOARD
+        // ══════════════════════════════════════════
+        function pushUndo() {
+            const snap = {};
+            document.querySelectorAll('td.c').forEach(td => {
+                const sp = td.querySelector('span');
+                snap[td.id] = { text: sp?.textContent || '', style: sp?.getAttribute('style') || '' };
+            });
+            undoStack.push(snap);
+            if (undoStack.length > 20) undoStack.shift();
+        }
+
+        function doUndo() {
+            if (!undoStack.length) { showToast('⚠ Nothing to undo'); return; }
+            const snap = undoStack.pop();
+            redoStack.push(snap);
+            Object.keys(snap).forEach(id => {
+                const td = document.getElementById(id);
+                if (!td) return;
+                let sp = td.querySelector('span');
+                if (!sp) { sp = document.createElement('span'); td.appendChild(sp); }
+                sp.textContent = snap[id].text;
+                sp.setAttribute('style', snap[id].style);
+            });
+            showToast('↩ Undo');
+        }
+
+        function doRedo() {
+            if (!redoStack.length) { showToast('⚠ Nothing to redo'); return; }
+            showToast('↪ Redo');
+        }
+
+        function doCopy() {
+            const el = document.getElementById(`cell-${activeCell}`);
+            clipboard = el?.querySelector('span')?.textContent || '';
+            showToast(`📋 Copied: "${clipboard}"`);
+        }
+
+        function doCut() {
+            doCopy();
+            clearCell();
+            showToast(`✂ Cut: "${clipboard}"`);
+        }
+
+        function doPaste() {
+            if (clipboard === null) { showToast('⚠ Nothing to paste'); return; }
+            pushUndo();
+            const el = document.getElementById(`cell-${activeCell}`);
+            let sp = el?.querySelector('span');
+            if (!sp && el) { sp = document.createElement('span'); el.appendChild(sp); }
+            if (sp) { sp.textContent = clipboard; }
+            addAuditEntry(activeCell, clipboard);
+            showToast(`📌 Pasted: "${clipboard}"`);
+        }
+
+        function clearCell() {
+            pushUndo();
+            const el = document.getElementById(`cell-${activeCell}`);
+            const sp = el?.querySelector('span');
+            if (sp) sp.textContent = '';
+            showToast('✓ Cell cleared');
+        }
+
+        // ══════════════════════════════════════════
+        //  ROWS / COLS
+        // ══════════════════════════════════════════
+        function insertRow(dir) { showToast(`↑ Row inserted ${dir} row ${activeCell.slice(1)}`); addAuditEntry(activeCell, '[row inserted]'); }
+        function deleteRow() { showToast(`✕ Row ${activeCell.slice(1)} deleted`); }
+        function insertCol() { showToast(`← Column inserted`); }
+
+        function selectCol(c) {
+            document.querySelectorAll('.chdr').forEach(h => h.classList.remove('sel'));
+            document.getElementById(`col${c}`)?.classList.add('sel');
+            selectedCol = c;
+            showToast(`Column ${c} selected`);
+        }
+
+        function selectRow(r) {
+            document.querySelectorAll('.rhdr').forEach(h => h.classList.remove('sel'));
+            document.getElementById(`rh${r}`)?.classList.add('sel');
+            showToast(`Row ${r} selected`);
+        }
+
+        function selectAll() {
+            document.querySelectorAll('.chdr').forEach(h => h.classList.add('sel'));
+            showToast('All cells selected');
+        }
+
+        function sortCol(dir) { showToast(`↕ Column ${selectedCol} sorted ${dir === 'asc' ? 'A→Z' : 'Z→A'}`); }
+
+        function toggleFilter() {
+            filterOn = !filterOn;
+            document.getElementById('btnFilter').classList.toggle('toggled', filterOn);
+            showToast(filterOn ? '⊟ Filter enabled' : '⊟ Filter disabled');
+        }
+
+        function toggleFreeze() {
+            frozen = !frozen;
+            document.getElementById('btnFreeze').classList.toggle('on', frozen);
+            document.getElementById('freezeLbl').textContent = frozen ? '❄ Unfreeze rows' : '❄ Freeze top row';
+            showToast(frozen ? '❄ Top row frozen' : '❄ Row unfrozen');
+        }
+
+        function toggleGridlines() {
+            gridlines = !gridlines;
+            document.getElementById('gridLbl').textContent = gridlines ? '⊞ Hide gridlines' : '⊞ Show gridlines';
+            document.querySelectorAll('td.c, .chdr, .rhdr').forEach(el => {
+                el.style.borderColor = gridlines ? '' : 'transparent';
+            });
+            showToast(gridlines ? '⊞ Gridlines shown' : '⊞ Gridlines hidden');
+        }
+
+        function toggleWrap() {
+            const el = document.getElementById(`cell-${activeCell}`);
+            if (el) {
+                const isWrapped = el.style.whiteSpace === 'normal';
+                el.style.whiteSpace = isWrapped ? '' : 'normal';
+                el.style.height = isWrapped ? '' : 'auto';
+                showToast(isWrapped ? '✓ Wrap off' : '✓ Wrap text on');
+            }
+        }
+
+        function mergeCells() { showToast('⊡ Merge & center applied to selection'); }
+
+        function toggleZoom(factor) {
+            const wrap = document.getElementById('sheetScroll');
+            const current = parseFloat(wrap.style.zoom || 1);
+            const nz = Math.min(2, Math.max(0.5, current * factor));
+            wrap.style.zoom = nz;
+            document.getElementById('zoomLbl').textContent = Math.round(nz * 100) + '%';
+            showToast(`🔍 Zoom: ${Math.round(nz * 100)}%`);
+        }
+
+        function toggleSidebar() {
+            sidebarVisible = !sidebarVisible;
+            const sb = document.getElementById('aiSidebar');
+            const rh = document.getElementById('resizeHandle');
+            sb.style.display = sidebarVisible ? '' : 'none';
+            rh.style.display = sidebarVisible ? '' : 'none';
+            document.getElementById('sidebarLbl').textContent = sidebarVisible ? '◧ Hide AI sidebar' : '◧ Show AI sidebar';
+            showToast(sidebarVisible ? '◧ AI sidebar shown' : '◧ AI sidebar hidden');
+        }
+
+        function toggleKPI() {
+            kpiVisible = !kpiVisible;
+            document.getElementById('kpiBar').style.display = kpiVisible ? '' : 'none';
+            document.getElementById('kpiLbl').textContent = kpiVisible ? '▤ Hide KPI bar' : '▤ Show KPI bar';
+            showToast(kpiVisible ? '▤ KPI bar shown' : '▤ KPI bar hidden');
+        }
+
+        // ══════════════════════════════════════════
+        //  SHEETS
+        // ══════════════════════════════════════════
+        function switchSheet(name) {
+            document.querySelectorAll('.stab-sheet').forEach(t => t.classList.remove('active'));
+            showToast(`📊 Switched to: ${name}`);
+            event.target.closest('.stab-sheet').classList.add('active');
+        }
+
+        function addSheet(el) {
+            const name = prompt('Sheet name:', 'Sheet 2');
+            if (name) {
+                const tab = document.createElement('div');
+                tab.className = 'stab-sheet';
+                tab.textContent = name;
+                tab.onclick = () => switchSheet(name);
+                el.parentNode.insertBefore(tab, el);
+                showToast(`✓ Sheet "${name}" created`);
+            }
+        }
+
+        // ══════════════════════════════════════════
+        //  TITLE EDITING
+        // ══════════════════════════════════════════
+        function makeEditable(el) {
+            el.contentEditable = true;
+            el.focus();
+            const r = document.createRange(); r.selectNodeContents(el);
+            const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        }
+
+        function finishEdit(el) {
+            el.contentEditable = false;
+            showToast(`✓ Renamed: "${el.textContent}"`);
+        }
+
+        function titleKey(e, el) {
+            if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+            if (e.key === 'Escape') { el.contentEditable = false; }
+        }
+
+        // ══════════════════════════════════════════
+        //  FORMULA BAR / GOTO
+        // ══════════════════════════════════════════
+        function promptGoTo() {
+            const dest = prompt('Go to cell:', activeCell);
+            if (dest && /^[A-H][0-9]+$/.test(dest.toUpperCase())) {
+                activateCell(dest.toUpperCase());
+            } else if (dest) {
+                showToast('⚠ Invalid cell reference');
+            }
+        }
+
+        function explainFormula() {
+            const fi = document.getElementById('formulaInput').value;
+            if (!fi.startsWith('=')) { showToast('⚠ No formula in active cell'); return; }
+            switchSideTabByName('chat');
+            fillPrompt(`Explain the formula: ${fi} in cell ${activeCell}`);
+            sendMsg();
+        }
+
+        // ══════════════════════════════════════════
+        //  MENUS
+        // ══════════════════════════════════════════
+        function toggleMenu(id, el) {
+            const isOpen = document.getElementById(id).classList.contains('show');
+            closeAllMenus();
+            if (!isOpen) {
+                document.getElementById(id).classList.add('show');
+                el.classList.add('open');
+            }
+        }
+
+        function closeAllMenus() {
+            document.querySelectorAll('.dropdown.show').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.tmenu-item.open').forEach(t => t.classList.remove('open'));
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.tmenu-item')) closeAllMenus();
+            if (!e.target.closest('.ctxmenu') && !e.target.closest('td.c')) {
+                document.getElementById('ctxMenu').classList.remove('show');
+            }
+        });
+
+        // ══════════════════════════════════════════
+        //  CONTEXT MENU
+        // ══════════════════════════════════════════
+        function showCtx(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            activateCell(id);
+            const m = document.getElementById('ctxMenu');
+            const x = Math.min(e.clientX, window.innerWidth - 200);
+            const y = Math.min(e.clientY, window.innerHeight - 300);
+            m.style.left = x + 'px';
+            m.style.top = y + 'px';
+            m.classList.add('show');
+        }
+
+        function showCellHistory() {
+            closeModal('ctxMenu');
+            addAIMsg(`<strong>Cell history for ${activeCell}</strong><br><br>
+  <div class="data-card"><div class="data-row"><span class="data-lbl">14:38:21 · j.anderson</span><span class="data-val">Current value</span></div><div class="data-row"><span class="data-lbl">14:15:04 · r.patel</span><span class="data-val">Previous value</span></div><div class="data-row"><span class="data-lbl">13:40:00 · j.anderson</span><span class="data-val">Initial entry</span></div></div>`);
+            switchSideTabByName('chat');
+        }
+
+        // ══════════════════════════════════════════
+        //  FILE OPERATIONS
+        // ══════════════════════════════════════════
+        function saveFile() {
+            document.getElementById('saveLbl').textContent = 'saving…';
+            setTimeout(() => {
+                document.getElementById('saveLbl').textContent = 'just now';
+                showToast('💾 Saved');
+            }, 600);
+        }
+
+        function triggerImport() {
+            document.getElementById('importInput').click();
+            closeAllMenus();
+        }
+
+        function handleImport(input) {
+            if (input.files[0]) {
+                showToast(`📂 Importing ${input.files[0].name}…`);
+                setTimeout(() => showToast(`✓ ${input.files[0].name} imported — 98% formula accuracy`), 1500);
+            }
+        }
+
+        function doExport() {
+            const checks = document.querySelectorAll('#exportOptions .check-box.checked');
+            const formats = [];
+            checks.forEach(c => formats.push(c.parentElement.querySelector('.check-lbl').textContent));
+            closeModal('exportModal');
+            showToast(`⬇ Exporting: ${formats.join(', ') || 'No format selected'}`);
+        }
+
+        // ══════════════════════════════════════════
+        //  BLOOMBERG SYNC
+        // ══════════════════════════════════════════
+        function runBBGSync() {
+            const prog = document.getElementById('bbgProgress');
+            const fill = document.getElementById('bbgFill');
+            const status = document.getElementById('bbgStatus');
+            prog.style.display = 'block';
+            const steps = ['Connecting to Bloomberg Terminal…', 'Authenticating…', 'Fetching ACME US Equity…', 'Refreshing financial data…', 'Updating cells…', 'Done — 12 cells updated'];
+            let i = 0;
+            const iv = setInterval(() => {
+                fill.style.width = ((i + 1) / steps.length * 100) + '%';
+                status.textContent = steps[i];
+                i++;
+                if (i >= steps.length) {
+                    clearInterval(iv);
+                    setTimeout(() => {
+                        closeModal('bbgModal');
+                        prog.style.display = 'none'; fill.style.width = '0%';
+                        document.getElementById('statBBG').textContent = 'Live ✓';
+                        showToast('⬤ Bloomberg refreshed — 12 cells updated');
+                        addAuditEntry('D3:G8', 'Bloomberg refresh · ACME Corp FY2024');
+                        // Flash cells
+                        ['C3', 'D3', 'E3', 'C5', 'D5', 'E5'].forEach((id, idx) => {
+                            setTimeout(() => {
+                                const el = document.getElementById(`cell-${id}`);
+                                if (el) { el.classList.add('bbg-row-anim'); setTimeout(() => el.classList.remove('bbg-row-anim'), 600); }
+                            }, idx * 120);
+                        });
+                    }, 400);
+                }
+            }, 320);
+        }
+
+        // ══════════════════════════════════════════
+        //  SEC PULL
+        // ══════════════════════════════════════════
+        function runSECPull() {
+            closeModal('secModal');
+            showToast('📄 Pulling SEC 10-K data for ACME Corp…');
+            setTimeout(() => {
+                showToast('✓ SEC Edgar: 10-K FY2024 imported — 8 cells updated');
+                addAuditEntry('B3:F8', 'SEC Edgar 10-K FY2024 import');
+                addAIMsg(`SEC Edgar pull complete for <strong>ACME Corp · 10-K FY2024</strong>.<div class="data-card" style="color:var(--text)"><div class="data-row"><span class="data-lbl">Revenue</span><span class="data-val">$1,048.2M</span></div><div class="data-row"><span class="data-lbl">EBITDA</span><span class="data-val">$271.9M</span></div><div class="data-row"><span class="data-lbl">Net Income</span><span class="data-val">$74.3M</span></div><div class="data-row"><span class="data-lbl">Total Debt</span><span class="data-val">$920.1M</span></div></div>Inserted in B3:F8. Audit log updated.`);
+                switchSideTabByName('chat');
+            }, 1800);
+        }
+
+        // ══════════════════════════════════════════
+        //  FORMULA VALIDATION
+        // ══════════════════════════════════════════
+        function fixAllErrors() {
+            closeModal('validateModal');
+            // Fix C11 sign error
+            const c11 = document.getElementById('cell-B12');
+            if (c11) {
+                const sp = c11.querySelector('span');
+                if (sp) { sp.textContent = '($42.8)'; sp.className = 'cn neg'; }
+                c11.querySelector('.err-flag')?.remove();
+            }
+            errorsFixed.err1 = true; errorsFixed.err2 = true;
+            document.getElementById('errCount').textContent = '0';
+            document.getElementById('errCount').style.background = 'var(--green)';
+            addAuditEntry('C11', 'Auto-corrected: 42.8 → -42.8 (sign fix)');
+            showToast('✓ All errors auto-fixed — model validated');
+            buildErrsList();
+        }
+
+        // ══════════════════════════════════════════
+        //  APPROVAL
+        // ══════════════════════════════════════════
+        function submitApproval() {
+            closeModal('approvalModal');
+            document.getElementById('versionBadge').textContent = 'v3.3 — Pending';
+            document.getElementById('versionBadge').style.color = 'var(--amber)';
+            showToast('⊙ Submitted to M.Chen for director approval');
+            addAuditEntry('ALL', 'Submitted for director approval · v3.3');
+            setTimeout(() => {
+                showToast('✓ M.Chen approved v3.3 — model unlocked');
+                document.getElementById('versionBadge').textContent = 'v3.3';
+                document.getElementById('versionBadge').style.color = '';
+                addAuditEntry('ALL', 'APPROVED by M.Chen · v3.2 → v3.3');
+            }, 3000);
+        }
+
+        // ══════════════════════════════════════════
+        //  INVITE
+        // ══════════════════════════════════════════
+        function sendInvite() {
+            const email = document.getElementById('inviteEmail').value.trim();
+            const role = document.getElementById('inviteRole').value;
+            if (!email) { showToast('⚠ Enter an email address'); return; }
+            closeModal('shareModal');
+            showToast(`✓ Invited ${email} as ${role}`);
+        }
+
+        // ══════════════════════════════════════════
+        //  FIND & REPLACE
+        // ══════════════════════════════════════════
+        function doFind() {
+            const q = document.getElementById('findInput').value.trim();
+            if (!q) return;
+            let count = 0;
+            document.querySelectorAll('td.c span').forEach(sp => {
+                if (sp.textContent.toLowerCase().includes(q.toLowerCase())) count++;
+            });
+            document.getElementById('findResult').textContent = count ? `Found ${count} match(es)` : 'No matches found';
+        }
+
+        function doReplace() {
+            const q = document.getElementById('findInput').value.trim();
+            const r = document.getElementById('replaceInput').value;
+            if (!q) return;
+            let count = 0;
+            pushUndo();
+            document.querySelectorAll('td.c span').forEach(sp => {
+                if (sp.textContent.toLowerCase().includes(q.toLowerCase())) {
+                    sp.textContent = sp.textContent.replace(new RegExp(q, 'gi'), r);
+                    count++;
+                }
+            });
+            document.getElementById('findResult').textContent = `Replaced ${count} instance(s)`;
+            closeModal('findModal');
+            showToast(`✓ Replaced ${count} instance(s) of "${q}"`);
+        }
+
+        // ══════════════════════════════════════════
+        //  VERSION
+        // ══════════════════════════════════════════
+        function restoreVersion(v) {
+            closeModal('versionModal');
+            showToast(`↩ Restored to ${v}`);
+            document.getElementById('versionBadge').textContent = v;
+        }
+
+        // ══════════════════════════════════════════
+        //  NEW MODEL / TEMPLATE
+        // ══════════════════════════════════════════
+        function createModel(name) {
+            closeModal('newModal');
+            document.getElementById('docTitle').textContent = `New ${name}`;
+            document.getElementById('versionBadge').textContent = 'v1.0';
+            showToast(`✓ New ${name} created`);
+        }
+
+        // ══════════════════════════════════════════
+        //  MISC ACTIONS
+        // ══════════════════════════════════════════
+        function addComment() {
+            const txt = document.getElementById('commentText').value.trim();
+            closeModal('commentModal');
+            const el = document.getElementById(`cell-${activeCell}`);
+            if (el) { el.style.outline = '2px dashed var(--accent2)'; setTimeout(() => el.style.outline = '', 3000); }
+            showToast(`💬 Comment added to ${activeCell}${txt ? ': "' + txt.slice(0, 30) + (txt.length > 30 ? '…' : '') + '"' : ''}`);
+            document.getElementById('commentText').value = '';
+        }
+
+        function showKpiDetail(title, val, delta, desc) {
+            document.getElementById('kpiModalTitle').textContent = title;
+            document.getElementById('kpiModalVal').textContent = val;
+            document.getElementById('kpiModalDelta').textContent = delta;
+            document.getElementById('kpiModalDesc').textContent = desc;
+            document.getElementById('kpiModalVal').style.color = delta.startsWith('↑') ? 'var(--green)' : delta.startsWith('↓') ? 'var(--red)' : 'var(--text)';
+            showModal('kpiModal');
+        }
+
+        function focusChat() {
+            switchSideTabByName('chat');
+            if (!sidebarVisible) toggleSidebar();
+            document.getElementById('chatInput').focus();
+        }
+
+        function clearChat() {
+            document.getElementById('chatMsgs').innerHTML = '';
+            chatHistory = [];
+            showToast('✓ Chat cleared');
+            initChat();
+        }
+
+        // ══════════════════════════════════════════
+        //  COLOR SWATCHES
+        // ══════════════════════════════════════════
+        const COLORS = ['#0a0b0e', '#1e2330', '#252b38', '#1a3a8f', '#2a1a5e', '#0f4c35', '#4f1a1a', '#2a2a0f',
+            '#4f7fff', '#22c55e', '#ef4444', '#f59e0b', '#a78bfa', '#e8c97a', '#e8ecf4', '#ffffff'];
+
+        function buildSwatches(containerId, varName, handler) {
+            const cont = document.getElementById(containerId);
+            if (!cont) return;
+            cont.innerHTML = '';
+            COLORS.forEach(c => {
+                const sw = document.createElement('div');
+                sw.className = 'swatch';
+                sw.style.background = c;
+                sw.style.border = '2px solid ' + (c === '#ffffff' ? '#666' : 'transparent');
+                sw.onclick = () => {
+                    window[varName] = c;
+                    cont.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                    sw.classList.add('active');
+                };
+                cont.appendChild(sw);
+            });
+        }
+
+        // ══════════════════════════════════════════
+        //  SENSITIVITY TABLE
+        // ══════════════════════════════════════════
+        function buildSensTable() {
+            const margins = ['24%', '25%', '26%', '27%', '28%'];
+            const multiples = ['9.0×', '10.0×', '10.8×', '11.5×', '12.0×'];
+            const base = [[28.1, 25.4, 22.8, 20.3, 18.1], [25.3, 22.9, 20.5, 18.3, 16.3], [22.4, 20.3, 18.2, 16.3, 14.5], [19.8, 17.9, 16.1, 14.4, 12.9], [17.5, 15.8, 14.2, 12.8, 11.4]];
+            const tbl = document.getElementById('sensTable');
+            if (!tbl) return;
+            tbl.innerHTML = '';
+            const hdr = `<tr><th>EV/EBITDA →<br>Margin ↓</th>${margins.map(m => `<th>${m}</th>`).join('')}</tr>`;
+            const rows = multiples.map((m, ri) => `<tr><th>${m}</th>${base[ri].map((v, ci) => {
+                const cls = v > 22 ? 'sens-hi' : v > 18 ? 'sens-mid' : 'sens-lo';
+                const act = ri === 2 && ci === 2 ? ' sens-active' : '';
+                return `<td class="${cls}${act}" onclick="showToast('IRR: ${v.toFixed(1)}% at ${multiples[ri]} / ${margins[ci]}')">${v.toFixed(1)}%</td>`;
+            }).join('')}</tr>`).join('');
+            tbl.innerHTML = hdr + rows;
+        }
+
+        // ══════════════════════════════════════════
+        //  AUDIT LOG
+        // ══════════════════════════════════════════
+        function buildAuditList() {
+            const cont = document.getElementById('auditList');
+            if (!cont) return;
+            cont.innerHTML = auditLog.map(e => `
+    <div class="audit-item" onclick="activateCell('${e.desc.split(' ')[0]}')">
+      <div class="aud-time">${e.time}</div>
+      <div class="aud-body"><div class="aud-user">${e.user}</div><div class="aud-desc">${e.desc}</div></div>
+      <div class="aud-type ${e.type}">${e.label}</div>
+    </div>`).join('');
+
+            const full = document.getElementById('fullAuditList');
+            if (full) full.innerHTML = cont.innerHTML;
+        }
+
+        function addAuditEntry(cell, desc) {
+            const now = new Date();
+            const t = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            auditLog.unshift({ time: t, user: 'j.anderson', desc: `${cell}: ${desc.slice(0, 40)}`, type: 't-fml', label: 'EDIT' });
+            if (auditLog.length > 20) auditLog.pop();
+            buildAuditList();
+        }
+
+        // ══════════════════════════════════════════
+        //  ERRORS LIST
+        // ══════════════════════════════════════════
+        function buildErrsList() {
+            const cont = document.getElementById('errsList');
+            if (!cont) return;
+            cont.innerHTML = errorsData.map(e => `
+    <div class="err-item ${e.fixed ? 'fixed' : ''}" id="${e.id}" onclick="activateCell('${e.cell}')">
+      <div class="err-hdr" style="color:${e.color}">${e.type} · ${e.cell}</div>
+      <div class="err-desc">${e.desc}</div>
+      ${!e.fixed ? `<div class="act-row">
+        <span class="act-btn p" onclick="event.stopPropagation();fixError('${e.id}')">Auto-fix</span>
+        <span class="act-btn" onclick="event.stopPropagation();showToast('Flagged for director review')">Flag for review</span>
+        <span class="act-btn" onclick="event.stopPropagation();explainError('${e.id}')">✦ Explain</span>
+      </div>` : '<div class="act-btn g" style="width:fit-content">✓ Fixed</div>'}
+    </div>`).join('');
+        }
+
+        function fixError(id) {
+            const e = errorsData.find(e => e.id === id);
+            if (!e) return;
+            e.fixed = true;
+            if (id === 'err1') {
+                const c11 = document.getElementById('cell-B12');
+                if (c11) { const sp = c11.querySelector('span'); if (sp) { sp.textContent = '($42.8)'; sp.className = 'cn neg'; } c11.querySelector('.err-flag')?.remove(); }
+            }
+            const remaining = errorsData.filter(e => !e.fixed).length;
+            document.getElementById('errCount').textContent = remaining;
+            document.getElementById('errCount').style.background = remaining === 0 ? 'var(--green)' : 'var(--amber)';
+            addAuditEntry(e.cell, `Error auto-fixed: ${e.type}`);
+            showToast(`✓ ${e.cell} error fixed`);
+            buildErrsList();
+        }
+
+        function explainError(id) {
+            const e = errorsData.find(e => e.id === id);
+            if (!e) return;
+            switchSideTabByName('chat');
+            addAIMsg(`<strong>${e.type} in ${e.cell}</strong><br><br>${e.desc}<br><br>In LBO models, cash outflows must be <strong>negative</strong> to correctly compute IRR. A positive value in a cash outflow row would artificially inflate the IRR metric.<div class="act-row"><span class="act-btn p" onclick="fixError('${e.id}')">Auto-fix</span></div>`);
+        }
+
+        // ══════════════════════════════════════════
+        //  CHAT
+        // ══════════════════════════════════════════
+        const AI_RESPONSES = [
+            { match: ['irr', 'formula', 'build'], reply: `Here's the complete IRR formula for your LBO:<code class="code-block">=IRR(C8:C15, 0.1) * XNPV(E4, D8:D15, B8:B15)</code>Inserted in <strong>E6</strong>. IRR combines the periodic return with XNPV to weight cash flows by exact dates — critical for hold periods that aren't calendar-aligned.<div class="act-row"><span class="act-btn p" onclick="showToast('✓ Formula inserted in E6')">Insert in E6</span><span class="act-btn" onclick="showToast('Audit log updated')">Log change</span></div>` },
+            { match: ['sensitivity', 'sens', 'table'], reply: `Building a 2-way sensitivity table: <strong>IRR vs Entry EV/EBITDA × EBITDA Margin</strong>.<br><br>Range: 9.0×–12.0× entry multiple / 24%–28% margin. Base case highlighted.<div class="act-row"><span class="act-btn p" onclick="showModal('sensModal');buildSensTable()">View table</span><span class="act-btn" onclick="showToast('✓ Inserted at H1:N8')">Insert to sheet</span></div>` },
+            { match: ['error', 'check', 'circular', 'validate'], reply: `Scanning all 847 formulas…<div class="warn-card">⚠ <strong>C11</strong> — Sign error. Outflow appears positive (42.8). LBO convention requires negative cash outflows.</div><div class="err-card" style="border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.06)">⊗ <strong>F8</strong> — Circular reference: F8 → F12 → F8 (debt schedule iterative calc).</div><div class="act-row"><span class="act-btn p" onclick="fixAllErrors()">Fix all</span><span class="act-btn" onclick="switchSideTabByName('errors')">View errors tab</span></div>` },
+            { match: ['sec', 'edgar', '10-k', 'filing'], reply: `Querying SEC Edgar for <strong>ACME Corp 10-K FY2024</strong>…<div class="data-card"><div class="data-row"><span class="data-lbl">Revenue</span><span class="data-val">$1,048.2M</span></div><div class="data-row"><span class="data-lbl">EBITDA</span><span class="data-val">$271.9M</span></div><div class="data-row"><span class="data-lbl">Net Income</span><span class="data-val">$74.3M</span></div><div class="data-row"><span class="data-lbl">Total Debt</span><span class="data-val">$920.1M</span></div></div><div class="act-row"><span class="act-btn p" onclick="showToast('✓ Data inserted in B3:F8')">Insert to sheet</span></div>` },
+            { match: ['explain', 'xnpv', 'npv'], reply: `<strong>XNPV(rate, values, dates)</strong> calculates net present value using <em>exact dates</em> rather than uniform periods — unlike standard NPV which assumes equal spacing.<br><br>In your formula <code class="code-block">=IRR(C8:C15, 0.1) * XNPV(E4, D8:D15, B8:B15)</code>This gives a time-weighted IRR that accounts for the exact hold period. For LBO exits that don't land on a calendar year, this prevents overstating returns by 0.5–2pp.` },
+            { match: ['bloomberg', 'bbg', 'refresh'], reply: `Initiating Bloomberg Terminal sync for <strong>ACME Corp</strong>...<div class="data-card"><div class="data-row"><span class="data-lbl">ACME US Equity</span><span class="data-val">$48.20 (+1.4%)</span></div><div class="data-row"><span class="data-lbl">EV/EBITDA FY2024</span><span class="data-val">10.4×</span></div><div class="data-row"><span class="data-lbl">Revenue FY2024</span><span class="data-val">$1,048M</span></div></div><div class="act-row"><span class="act-btn p" onclick="runBBGSync();showModal('bbgModal')">Sync all fields</span></div>` },
+            { match: ['moic', 'exit', 'scenario', '11x', '10x'], reply: `At an <strong>11× exit EV/EBITDA</strong> (vs 9.2× base):<div class="data-card"><div class="data-row"><span class="data-lbl">Exit EV</span><span class="data-val">$4,818M</span></div><div class="data-row"><span class="data-lbl">Exit Equity</span><span class="data-val">$4,270M</span></div><div class="data-row"><span class="data-lbl">MOIC</span><span class="data-val">6.8×</span></div><div class="data-row"><span class="data-lbl">IRR</span><span class="data-val">34.2%</span></div></div>A significant uplift — driven by both multiple expansion and EBITDA growth.` },
+            { match: ['dcf', 'discounted', 'cash flow'], reply: `Generating a <strong>5-year DCF model</strong> for ACME Corp:<br><br>Using WACC of 10.1% (from E4), terminal growth 3.0%, FY2025E–FY2029E projections.<code class="code-block">=XNPV(E4, D8:D13, B8:B13) + D13/(E4-0.03)/(1+E4)^5</code>Enterprise Value: <strong>$2,340M</strong> (implied 9.8% upside vs entry).<div class="act-row"><span class="act-btn p" onclick="switchSheet('DCF Analysis');showToast('✓ Switched to DCF tab')">Go to DCF sheet</span></div>` },
+        ];
+
+        function initChat() {
+            addAIMsg(`Ready. I have full context on <strong>LBO Model v3.2 — ACME Corp</strong>. Bloomberg data is live. 847 formulas loaded, 2 issues detected.`);
+        }
+
+        function fillPrompt(text) {
+            document.getElementById('chatInput').value = text;
+            autoResize(document.getElementById('chatInput'));
+            document.getElementById('chatInput').focus();
+        }
+
+        function chatKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 72) + 'px';
+        }
+
+        let isTyping = false;
+
+        function sendMsg() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || isTyping) return;
+            input.value = ''; input.style.height = 'auto';
+
+            // User message
+            const cont = document.getElementById('chatMsgs');
+            const udiv = document.createElement('div');
+            udiv.className = 'msg msg-u';
+            udiv.innerHTML = `<div class="bubble">${escHtml(text)}</div><div class="msg-meta">You · just now</div>`;
+            cont.appendChild(udiv);
+            cont.scrollTop = cont.scrollHeight;
+
+            isTyping = true;
+            document.getElementById('sendBtn').disabled = true;
+            const typing = document.createElement('div');
+            typing.className = 'msg msg-a';
+            typing.innerHTML = `<div class="typing-ind"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+            cont.appendChild(typing);
+            cont.scrollTop = cont.scrollHeight;
+
+            setTimeout(() => {
+                typing.remove();
+                isTyping = false;
+                document.getElementById('sendBtn').disabled = false;
+
+                // Match response
+                const lc = text.toLowerCase();
+                const match = AI_RESPONSES.find(r => r.match.some(k => lc.includes(k)));
+                if (match) addAIMsg(match.reply);
+                else addAIMsg(`Analyzing <strong>${escHtml(text)}</strong> in context of LBO Model v3.2…<br><br>I've reviewed the relevant cells and formula dependencies. Would you like me to apply changes directly?<div class="act-row"><span class="act-btn p" onclick="showToast('✓ Change queued for approval')">Apply to model</span><span class="act-btn" onclick="showToast('Preview mode enabled')">Preview first</span><span class="act-btn" onclick="showModal('approvalModal')">Submit for approval</span></div>`);
+            }, 900 + Math.random() * 700);
+        }
+
+        function addAIMsg(html) {
+            const cont = document.getElementById('chatMsgs');
+            const div = document.createElement('div');
+            div.className = 'msg msg-a';
+            div.innerHTML = `<div class="bubble">${html}</div><div class="msg-meta">Grydx AI · just now</div>`;
+            cont.appendChild(div);
+            cont.scrollTop = cont.scrollHeight;
+        }
+
+        function escHtml(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        // ══════════════════════════════════════════
+        //  SIDEBAR TABS
+        // ══════════════════════════════════════════
+        function switchSideTab(name, el) {
+            document.querySelectorAll('.stab').forEach(t => t.classList.remove('act'));
+            el.classList.add('act');
+            switchSideTabByName(name);
+        }
+
+        function switchSideTabByName(name) {
+            ['chat', 'audit', 'errors'].forEach(n => {
+                document.getElementById(`panel${n.charAt(0).toUpperCase() + n.slice(1)}`).style.display = n === name ? 'flex' : 'none';
+            });
+        }
+
+        // ══════════════════════════════════════════
+        //  MODALS
+        // ══════════════════════════════════════════
+        function showModal(id) {
+            closeAllMenus();
+            document.getElementById(id)?.classList.add('show');
+            if (id === 'sensModal') buildSensTable();
+            if (id === 'colorModal') buildSwatches('colorSwatches', 'selectedColor', 'applyColor');
+            if (id === 'textColorModal') buildSwatches('textColorSwatches', 'selectedTextColor', 'applyTextColor');
+            if (id === 'auditTrailModal') buildAuditList();
+        }
+
+        function closeModal(id) { document.getElementById(id)?.classList.remove('show'); }
+
+        function overlayClose(e, el) { if (e.target === el) el.classList.remove('show'); }
+
+        // ══════════════════════════════════════════
+        //  TOAST
+        // ══════════════════════════════════════════
+        let toastT = null;
+        function showToast(msg, icon = '✓') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').textContent = icon;
+            t.classList.add('show');
+            clearTimeout(toastT);
+            toastT = setTimeout(() => t.classList.remove('show'), 2600);
+        }
+
+        // ══════════════════════════════════════════
+        //  RESIZE HANDLE
+        // ══════════════════════════════════════════
+        (function () {
+            const handle = document.getElementById('resizeHandle');
+            let dragging = false, startX = 0, startW = 0;
+            handle.addEventListener('mousedown', e => {
+                dragging = true; startX = e.clientX;
+                startW = document.getElementById('aiSidebar').offsetWidth;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+            document.addEventListener('mousemove', e => {
+                if (!dragging) return;
+                const diff = startX - e.clientX;
+                const nw = Math.max(240, Math.min(520, startW + diff));
+                document.getElementById('aiSidebar').style.width = nw + 'px';
+                document.documentElement.style.setProperty('--sidebar-w', nw + 'px');
+            });
+            document.addEventListener('mouseup', () => { dragging = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; });
+        })();
+
+        // ══════════════════════════════════════════
+        //  AUTO SAVE
+        // ══════════════════════════════════════════
+        let saveInterval = setInterval(() => {
+            document.getElementById('saveLbl').textContent = 'saving…';
+            setTimeout(() => document.getElementById('saveLbl').textContent = 'just now', 400);
+        }, 60000);
+
+        // ══════════════════════════════════════════
+        //  COLLAB SIMULATION
+        // ══════════════════════════════════════════
+        const collabActions = [
+            { cell: 'B11', user: 'M.Chen', color: '#2f9e44', delay: 8000 },
+            { cell: 'D5', user: 'R.Patel', color: '#c2255c', delay: 14000 },
+            { cell: 'F8', user: 'S.Kim', color: '#e67700', delay: 20000 },
+            { cell: 'C3', user: 'M.Chen', color: '#2f9e44', delay: 28000 },
+        ];
+        collabActions.forEach(({ cell, user, color, delay }) => {
+            setTimeout(() => {
+                const el = document.getElementById(`cell-${cell}`);
+                if (!el) return;
+                // Remove any existing collab rings
+                el.querySelectorAll('.collab-ring').forEach(r => r.remove());
+                const ring = document.createElement('div');
+                ring.className = 'collab-ring'; ring.style.borderColor = color;
+                const lbl = document.createElement('div');
+                lbl.className = 'collab-name'; lbl.style.background = color; lbl.textContent = user;
+                ring.appendChild(lbl); el.appendChild(ring);
+                setTimeout(() => ring.remove(), 4000);
+                addAuditEntry(cell, `${user} editing`);
+            }, delay);
+        });
+
+        // ══════════════════════════════════════════
+        //  INIT
+        // ══════════════════════════════════════════
+        buildSheet();
+        buildAuditList();
+        buildErrsList();
+        initChat();
+        activateCell('E6');
+    </script>
+</body>
+
+</html>
