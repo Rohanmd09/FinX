@@ -1480,8 +1480,9 @@
             display: flex;
             align-items: center;
             padding: 0 12px;
-            gap: 14px;
+            gap: 10px;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         .stat {
@@ -1940,10 +1941,10 @@
 
         /* bloomberg animation */
         .bbg-row-anim {
-            animation: bbgPulse .6s ease;
+            animation: bbgRowFlash .6s ease;
         }
 
-        @keyframes bbgPulse {
+        @keyframes bbgRowFlash {
 
             0%,
             100% {
@@ -2101,7 +2102,8 @@
             </div>
         </div>
 
-        <div class="topbar-right">
+        <div class="topbar-right"><span id="collabStatusBar"
+                style="font-size:10.5px;font-family:'DM Mono',monospace;color:#2f9e44;opacity:0;transition:opacity .4s;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;margin-right:4px"></span>
             <div class="avatars">
                 <div class="av a1" onclick="showModal('collabModal')">
                     <div class="av-tooltip">J. Anderson (You)</div>JA
@@ -2181,7 +2183,7 @@
         </div>
         <div class="tb-grp">
             <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px;color:var(--amber)"
-                title="Bloomberg refresh" onclick="showModal('bbgModal')">⬤ BBG</button>
+                title="Sync live Bloomberg data" onclick="showModal('bbgModal')" class="bbg-pulse-target">⬤ BBG</button>
             <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px" title="SEC Edgar"
                 onclick="showModal('secModal')">📄 SEC</button>
             <button class="tb-btn" style="width:auto;padding:0 8px;font-size:10.5px" title="Reuters"
@@ -2327,6 +2329,10 @@
                             scenario</span>
                         <span class="pill" onclick="fillPrompt('Generate a full DCF model template')">DCF
                             template</span>
+                        <span class="pill" onclick="fillPrompt('Optimize the model for better returns')">✦ Optimize
+                            returns</span>
+                        <span class="pill" onclick="fillPrompt('Run a stress test bear case scenario')">⚠ Stress
+                            test</span>
                     </div>
                 </div>
             </div>
@@ -2364,8 +2370,19 @@
         <div class="stat">Audit: <b>● Recording</b></div>
         <div class="stat-sep"></div>
         <div class="stat"><b id="statUsers">4</b> users active</div>
-        <div style="margin-left:auto" class="stat">Zoom: <b id="zoomLbl">100%</b></div>
-        <div class="stat">Saved <b id="saveLbl">just now</b></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px" class="stat">
+            <span id="mktTicker"
+                style="display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:9.5px;opacity:.8;"></span>
+            <span style="opacity:.3">|</span>
+            <span>Zoom: <b id="zoomLbl">100%</b></span>
+            <span style="opacity:.3">|</span>
+            <span>BBG: <b id="lastSyncTime" style="color:rgba(255,255,255,.9)">14:37</b></span>
+            <span style="opacity:.3">|</span>
+            <b id="liveClock"
+                style="font-family:'DM Mono',monospace;letter-spacing:.4px;color:rgba(255,255,255,.75)">--:--:--</b>
+            <span style="opacity:.3">|</span>
+            <span>Saved <b id="saveLbl">just now</b></span>
+        </div>
     </div>
 
     <!-- ══ TOAST ══ -->
@@ -2421,25 +2438,30 @@
                 <div class="perm-row">
                     <div>
                         <div class="perm-name">J. Anderson (You)</div>
-                        <div class="perm-role">j.anderson@grydx.com</div>
+                        <div class="perm-role"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                data-cfemail="6b01450a050f0e191804052b0c19120f1345080406">[email&#160;protected]</a>
+                        </div>
                     </div><span class="perm-badge role-director">Owner</span>
                 </div>
                 <div class="perm-row">
                     <div>
                         <div class="perm-name">M. Chen</div>
-                        <div class="perm-role">m.chen@firm.com</div>
+                        <div class="perm-role"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                data-cfemail="0c61226f6469624c6a657e61226f6361">[email&#160;protected]</a></div>
                     </div><span class="perm-badge role-editor">Editor</span>
                 </div>
                 <div class="perm-row">
                     <div>
                         <div class="perm-name">R. Patel</div>
-                        <div class="perm-role">r.patel@firm.com</div>
+                        <div class="perm-role"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                data-cfemail="a8da86d8c9dccdc4e8cec1dac586cbc7c5">[email&#160;protected]</a></div>
                     </div><span class="perm-badge role-analyst">Analyst</span>
                 </div>
                 <div class="perm-row">
                     <div>
                         <div class="perm-name">S. Kim</div>
-                        <div class="perm-role">s.kim@firm.com</div>
+                        <div class="perm-role"><a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                data-cfemail="8ffca1e4e6e2cfe9e6fde2a1ece0e2">[email&#160;protected]</a></div>
                     </div><span class="perm-badge role-viewer">Viewer</span>
                 </div>
             </div>
@@ -2542,8 +2564,10 @@
     <!-- BLOOMBERG MODAL -->
     <div class="overlay" id="bbgModal" onclick="overlayClose(event,this)">
         <div class="modal">
-            <div class="modal-title">⬤ Bloomberg Terminal Integration</div>
-            <div class="modal-sub">Real-time data refresh for ACME Corp model. Last sync: 14:37:05 today.</div>
+            <div class="modal-title">⬤ Bloomberg Terminal Integration <span id="bbgLivePrice"
+                    style="margin-left:8px;font-size:13px">$48.20</span></div>
+            <div class="modal-sub">Real-time data refresh for ACME Corp model. Last sync: <span
+                    id="lastSyncDisplay">14:37:05</span> today.</div>
             <div style="margin-bottom:12px">
                 <div class="bbg-ticker"><span class="bbg-sym">ACME US Equity</span><span
                         class="bbg-val">$48.20</span><span class="bbg-chg up">+1.4%</span></div>
@@ -2582,7 +2606,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closeModal('bbgModal')">Cancel</button>
-                <button class="btn btn-amber" onclick="runBBGSync()">⬤ Sync Now</button>
+                <button class="btn btn-amber bbg-pulse-target" onclick="runBBGSync()">⬤ Sync Now</button>
             </div>
         </div>
     </div>
@@ -3112,6 +3136,7 @@
         </div>
     </div>
 
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script>
         // ══════════════════════════════════════════
         //  DATA
@@ -4200,15 +4225,20 @@
             cont.scrollTop = cont.scrollHeight;
 
             setTimeout(() => {
-                typing.remove();
-                isTyping = false;
-                document.getElementById('sendBtn').disabled = false;
-
-                // Match response
-                const lc = text.toLowerCase();
-                const match = AI_RESPONSES.find(r => r.match.some(k => lc.includes(k)));
-                if (match) addAIMsg(match.reply);
-                else addAIMsg(`Analyzing <strong>${escHtml(text)}</strong> in context of LBO Model v3.2…<br><br>I've reviewed the relevant cells and formula dependencies. Would you like me to apply changes directly?<div class="act-row"><span class="act-btn p" onclick="showToast('✓ Change queued for approval')">Apply to model</span><span class="act-btn" onclick="showToast('Preview mode enabled')">Preview first</span><span class="act-btn" onclick="showModal('approvalModal')">Submit for approval</span></div>`);
+                try {
+                    typing.remove();
+                    // Match response
+                    const lc = text.toLowerCase();
+                    const match = AI_RESPONSES.find(r => r.match.some(k => lc.includes(k)));
+                    if (match) addAIMsg(match.reply);
+                    else addAIMsg(`Analyzing <strong>${escHtml(text)}</strong> in context of LBO Model v3.2…<br><br>I've reviewed the relevant cells and formula dependencies. Would you like me to apply changes directly?<div class="act-row"><span class="act-btn p" onclick="showToast('✓ Change queued for approval')">Apply to model</span><span class="act-btn" onclick="showToast('Preview mode enabled')">Preview first</span><span class="act-btn" onclick="showModal('approvalModal')">Submit for approval</span></div>`);
+                } catch (e) {
+                    console.error('sendMsg response error:', e);
+                    addAIMsg('I encountered an issue. Please try again.');
+                } finally {
+                    isTyping = false;
+                    document.getElementById('sendBtn').disabled = false;
+                }
             }, 900 + Math.random() * 700);
         }
 
@@ -4300,37 +4330,1102 @@
         // ══════════════════════════════════════════
         //  COLLAB SIMULATION
         // ══════════════════════════════════════════
-        const collabActions = [
-            { cell: 'B11', user: 'M.Chen', color: '#2f9e44', delay: 8000 },
-            { cell: 'D5', user: 'R.Patel', color: '#c2255c', delay: 14000 },
-            { cell: 'F8', user: 'S.Kim', color: '#e67700', delay: 20000 },
-            { cell: 'C3', user: 'M.Chen', color: '#2f9e44', delay: 28000 },
-        ];
-        collabActions.forEach(({ cell, user, color, delay }) => {
-            setTimeout(() => {
-                const el = document.getElementById(`cell-${cell}`);
-                if (!el) return;
-                // Remove any existing collab rings
-                el.querySelectorAll('.collab-ring').forEach(r => r.remove());
-                const ring = document.createElement('div');
-                ring.className = 'collab-ring'; ring.style.borderColor = color;
-                const lbl = document.createElement('div');
-                lbl.className = 'collab-name'; lbl.style.background = color; lbl.textContent = user;
-                ring.appendChild(lbl); el.appendChild(ring);
-                setTimeout(() => ring.remove(), 4000);
-                addAuditEntry(cell, `${user} editing`);
-            }, delay);
-        });
 
         // ══════════════════════════════════════════
-        //  INIT
+        //  UPGRADED COLLAB SIMULATION — PERSISTENT LOOP
         // ══════════════════════════════════════════
-        buildSheet();
-        buildAuditList();
-        buildErrsList();
-        initChat();
-        activateCell('E6');
+        const COLLAB_USERS = [
+            { cell: 'B11', user: 'M.Chen', color: '#2f9e44', delay: 6000, msg: 'editing Entry assumptions' },
+            { cell: 'D5', user: 'R.Patel', color: '#c2255c', delay: 11000, msg: 'checking EBITDA FY2025E' },
+            { cell: 'F8', user: 'S.Kim', color: '#e67700', delay: 17000, msg: 'reviewing debt schedule' },
+            { cell: 'C3', user: 'M.Chen', color: '#2f9e44', delay: 24000, msg: 'refreshing revenue FY2023A' },
+            { cell: 'E8', user: 'R.Patel', color: '#c2255c', delay: 32000, msg: 'validating EBIT formula' },
+            { cell: 'B26', user: 'S.Kim', color: '#e67700', delay: 40000, msg: 'updating TLA balance' },
+        ];
+
+        function spawnCollab(cfg) {
+            const el = document.getElementById(`cell-${cfg.cell}`);
+            if (!el) return;
+            el.querySelectorAll('.collab-ring').forEach(r => r.remove());
+            const ring = document.createElement('div');
+            ring.className = 'collab-ring';
+            ring.style.borderColor = cfg.color;
+            const lbl = document.createElement('div');
+            lbl.className = 'collab-name';
+            lbl.style.background = cfg.color;
+            lbl.textContent = cfg.user;
+            ring.appendChild(lbl);
+            el.appendChild(ring);
+            // Show collab notification in status bar
+            showCollabStatus(`${cfg.user} · ${cfg.msg}`);
+            addAuditEntryLive(cfg.cell, `${cfg.user} is ${cfg.msg}`, 't-dat', 'COLLAB');
+            setTimeout(() => ring.remove(), 4500);
+        }
+
+        COLLAB_USERS.forEach(cfg => setTimeout(() => spawnCollab(cfg), cfg.delay));
+
+        // Repeating collab loop after 50s
+        setTimeout(() => {
+            setInterval(() => {
+                const pick = COLLAB_USERS[Math.floor(Math.random() * COLLAB_USERS.length)];
+                spawnCollab(pick);
+            }, 15000);
+        }, 50000);
+
+        function showCollabStatus(msg) {
+            const el = document.getElementById('collabStatusBar');
+            if (!el) return;
+            el.textContent = '● ' + msg;
+            el.style.opacity = '1';
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => { el.style.opacity = '0'; }, 3500);
+        }
+
+        function addAuditEntryLive(cell, desc, type, label) {
+            const now = new Date();
+            const t = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            if (typeof auditLog !== 'undefined') {
+                auditLog.unshift({ time: t, user: desc.split(' ')[0], desc: `${cell}: ${desc}`, type, label });
+                if (auditLog.length > 30) auditLog.pop();
+                if (document.getElementById('panelAudit')?.style.display !== 'none') buildAuditList();
+            }
+        }
+
+        // ══════════════════════════════════════════
+        //  LIVE CLOCK
+        // ══════════════════════════════════════════
+        function updateClock() {
+            const el = document.getElementById('liveClock');
+            if (!el) return;
+            const now = new Date();
+            el.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // ══════════════════════════════════════════
+        //  TICKING MARKET DATA (live feel)
+        // ══════════════════════════════════════════
+        const marketTick = {
+            'ACME': { price: 48.20, change: 1.4 },
+            'SPX': { price: 5124.3, change: 0.3 },
+            'VIX': { price: 14.2, change: -2.1 },
+        };
+
+        function tickMarket() {
+            Object.keys(marketTick).forEach(sym => {
+                const d = marketTick[sym];
+                const drift = (Math.random() - 0.49) * 0.12;
+                d.price = Math.max(1, d.price + drift);
+                d.change = parseFloat((d.change + (Math.random() - 0.5) * 0.05).toFixed(2));
+            });
+            const el = document.getElementById('mktTicker');
+            if (el) {
+                el.innerHTML = Object.entries(marketTick).map(([sym, d]) =>
+                    `<span class="mkt-item"><span class="mkt-sym">${sym}</span><span class="mkt-price">${d.price.toFixed(2)}</span><span class="mkt-chg ${d.change >= 0 ? 'up' : 'dn'}">${d.change >= 0 ? '+' : ''}${d.change.toFixed(1)}%</span></span>`
+                ).join('');
+            }
+            // Also update BBG status price display
+            const bbgPrice = document.getElementById('bbgLivePrice');
+            if (bbgPrice) bbgPrice.textContent = '$' + marketTick['ACME'].price.toFixed(2);
+        }
+        tickMarket();
+        setInterval(tickMarket, 3000);
+
+        // ══════════════════════════════════════════
+        //  IDLE DETECTION → AUTO DEMO
+        // ══════════════════════════════════════════
+        // Auto-demo disabled — user controls all interactions
+        let demoCancelled = true;
+        function startAutoDemo() { }
+        async function runDemoSequence() { }
+
+        function demoDelay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // ══════════════════════════════════════════
+        //  WORLD-CLASS BLOOMBERG SYNC (FULL STAGED)
+        // ══════════════════════════════════════════
+        const BBG_SYNC_DATA = [
+            { cell: 'C3', oldVal: '$921M', newVal: '$938M', field: 'Revenue FY2023A', delay: 0 },
+            { cell: 'D3', oldVal: '$1,048M', newVal: '$1,071M', field: 'Revenue FY2024A', delay: 180 },
+            { cell: 'E3', oldVal: '$1,202M', newVal: '$1,228M', field: 'Revenue FY2025E', delay: 340 },
+            { cell: 'C5', oldVal: '$238M', newVal: '$244M', field: 'EBITDA FY2023A', delay: 500 },
+            { cell: 'D5', oldVal: '$272M', newVal: '$281M', field: 'EBITDA FY2024A', delay: 660 },
+            { cell: 'E5', oldVal: '$319M', newVal: '$331M', field: 'EBITDA FY2025E', delay: 820 },
+            { cell: 'C6', oldVal: '25.8%', newVal: '26.0%', field: 'EBITDA Margin FY23', delay: 1000 },
+            { cell: 'D6', oldVal: '26.0%', newVal: '26.2%', field: 'EBITDA Margin FY24', delay: 1140 },
+            { cell: 'E6', oldVal: '22.4%', newVal: '24.1%', field: 'IRR (recalc)', delay: 1340, isKPI: true, kpiId: 'kpiIRR', oldKpi: '22.4%', newKpi: '24.1%', kpiColor: 'var(--green)' },
+            { cell: 'E19', oldVal: '22.4%', newVal: '24.1%', field: 'IRR summary', delay: 1480, isKPI: false },
+            { cell: 'E20', oldVal: '3.1×', newVal: '3.4×', field: 'MOIC (recalc)', delay: 1600, isKPI: true, kpiId: 'kpiMOIC', oldKpi: '3.1×', newKpi: '3.4×', kpiColor: 'var(--text)' },
+            { cell: 'F29', oldVal: '$548M', newVal: '$531M', field: 'Net Debt Y5', delay: 1780, isKPI: true, kpiId: 'kpiDebt', oldKpi: '$548M', newKpi: '$531M', kpiColor: 'var(--text)' },
+        ];
+
+        function runBBGSyncFull() {
+            hasSynced = true;
+            document.querySelectorAll('.bbg-pulse-target').forEach(b => b.classList.remove('bbg-attention'));
+            const prog = document.getElementById('bbgProgress');
+            const fill = document.getElementById('bbgFill');
+            const status = document.getElementById('bbgStatus');
+            if (!prog) return;
+            prog.style.display = 'block';
+
+            const stages = [
+                { pct: 8, msg: 'Connecting to Bloomberg Terminal…', t: 0 },
+                { pct: 18, msg: 'Authenticating session…', t: 320 },
+                { pct: 32, msg: 'Fetching ACME US Equity…', t: 640 },
+                { pct: 48, msg: 'Pulling financial statements…', t: 960 },
+                { pct: 65, msg: 'Updating 12 fields…', t: 1300 },
+                { pct: 80, msg: 'Recalculating model…', t: 1650 },
+                { pct: 92, msg: 'Recomputing IRR & MOIC…', t: 1950 },
+                { pct: 100, msg: 'Sync complete — 12 fields updated', t: 2200 },
+            ];
+
+            stages.forEach(s => {
+                setTimeout(() => {
+                    fill.style.width = s.pct + '%';
+                    status.textContent = s.msg;
+                }, s.t);
+            });
+
+            // Stage cell updates
+            BBG_SYNC_DATA.forEach(upd => {
+                setTimeout(() => {
+                    setCellValue(upd.cell, upd.newVal, 'bbg');
+                    if (upd.cell === 'E6' || upd.cell === 'E19') {
+                        const elC = document.getElementById('cell-' + upd.cell);
+                        if (elC) { const spC = elC.querySelector('span'); if (spC) spC.className = 'cn pos'; }
+                    }
+                    addAuditEntryLive(upd.cell, `Bloomberg: ${upd.field} updated to ${upd.newVal}`, 't-dat', 'BBG');
+                }, 1100 + upd.delay);
+            });
+
+            // KPI animations after cells update
+            setTimeout(() => {
+                BBG_SYNC_DATA.filter(u => u.isKPI).forEach(u => {
+                    animateKPI(u.kpiId, u.oldKpi, u.newKpi, u.kpiColor);
+                });
+            }, 2500);
+
+            // Wrap up
+            setTimeout(() => {
+                closeModal('bbgModal');
+                prog.style.display = 'none';
+                fill.style.width = '0%';
+                document.getElementById('statBBG').textContent = 'Live ✓';
+                document.getElementById('lastSyncTime').textContent = 'just now';
+                showToastRich('⬤', 'Bloomberg synced', '12 fields updated · IRR: 22.4% → 24.1%', 'amber');
+                addAuditEntryLive('MODEL', 'Bloomberg full sync — 12 cells updated, IRR recalculated', 't-dat', 'BBG');
+                // If tour is on step 2, advance to step 3
+                if (typeof tourActive !== 'undefined' && tourActive && typeof tourStep !== 'undefined' && tourStep === 1) {
+                    setTimeout(() => { tourStep = 2; renderTourStep(); }, 800);
+                }
+                // AI auto-comment
+                setTimeout(() => {
+                    switchSideTabByName('chat');
+                    addAIMsg(`Bloomberg sync complete. <strong>12 fields updated.</strong><br><br>Key changes detected:<div class="data-card"><div class="data-row"><span class="data-lbl">Revenue FY2024A</span><span class="data-val">$1,048M → $1,071M ↑</span></div><div class="data-row"><span class="data-lbl">EBITDA FY2024A</span><span class="data-val">$272M → $281M ↑</span></div><div class="data-row"><span class="data-lbl">IRR</span><span class="data-val" style="color:var(--green);font-weight:700">22.4% → 24.1% ↑ +1.7pp</span></div><div class="data-row"><span class="data-lbl">MOIC</span><span class="data-val">3.1× → 3.4× ↑</span></div></div>Returns improved on stronger Bloomberg actuals. Recommend submitting v3.3 for director sign-off.<div class="act-row"><span class="act-btn p" onclick="showModal('approvalModal')">Submit for approval</span><span class="act-btn" onclick="showModal('sensModal');buildSensTable()">Run sensitivity</span></div>`);
+                }, 600);
+            }, 3000);
+        }
+
+        // runBBGSync → runBBGSyncFull (single assignment)
+        window.runBBGSync = runBBGSyncFull;
+
+        // ══════════════════════════════════════════
+        //  KPI COUNTER ANIMATION
+        // ══════════════════════════════════════════
+        function animateKPI(kpiId, oldVal, newVal, color) {
+            const el = document.getElementById(kpiId);
+            if (!el) return;
+            el.classList.add('kpi-flash');
+            setTimeout(() => {
+                el.textContent = newVal;
+                el.style.color = color;
+                el.classList.remove('kpi-flash');
+                el.classList.add('kpi-updated');
+                setTimeout(() => el.classList.remove('kpi-updated'), 2000);
+            }, 300);
+        }
+
+        // ══════════════════════════════════════════
+        //  AI THAT TAKES ACTION (modifies model)
+        // ══════════════════════════════════════════
+        const AI_ACTIONS = {
+            'optimize': {
+                match: ['optimiz', 'improve', 'better', 'upside', 'boost'],
+                steps: ['Analyzing model…', 'Identifying leverage points…', 'Adjusting EBITDA margin assumptions…', 'Recomputing returns…'],
+                changes: [
+                    { cell: 'E6', newVal: '25.8%', kpiId: 'kpiIRR', newKpi: '25.8%', label: 'IRR (AI-optimized)' },
+                    { cell: 'E5', newVal: '$338M', label: 'EBITDA FY2025E (margin +0.5pp)' },
+                    { cell: 'E19', newVal: '25.8%', label: 'IRR summary' },
+                    { cell: 'E20', newVal: '3.6×', kpiId: 'kpiMOIC', newKpi: '3.6×', label: 'MOIC (AI-optimized)' },
+                ],
+                reply: `I've optimized the model assumptions based on Bloomberg consensus and comp analysis.<div class="data-card"><div class="data-row"><span class="data-lbl">EBITDA Margin FY2025E</span><span class="data-val">26.5% → 28.1% (+1.6pp)</span></div><div class="data-row"><span class="data-lbl">Revenue Growth FY2025E</span><span class="data-val">14.6% → 15.8%</span></div><div class="data-row"><span class="data-lbl">IRR</span><span class="data-val" style="color:var(--green);font-weight:700">24.1% → 25.8% ↑</span></div><div class="data-row"><span class="data-lbl">MOIC</span><span class="data-val">3.4× → 3.6× ↑</span></div></div>Changes applied to model. <strong>Audit log updated.</strong><div class="act-row"><span class="act-btn p" onclick="showModal('approvalModal')">Submit for approval</span><span class="act-btn" onclick="showToast('✓ Reverted to v3.2')">Revert</span></div>`,
+            },
+            'stress': {
+                match: ['stress', 'downside', 'bear', 'recession', 'worst'],
+                steps: ['Running bear case scenario…', 'Stressing revenue assumptions…', 'Applying 300bps rate shock…', 'Recomputing returns…'],
+                changes: [
+                    { cell: 'E3', newVal: '$1,140M', label: 'Revenue FY2025E (–7% stress)' },
+                    { cell: 'E5', newVal: '$295M', label: 'EBITDA FY2025E (stress)' },
+                    { cell: 'E6', newVal: '17.2%', kpiId: 'kpiIRR', newKpi: '17.2%', kpiColor: 'var(--amber)', label: 'IRR (bear case)' },
+                    { cell: 'E19', newVal: '17.2%', label: 'IRR summary' },
+                    { cell: 'E20', newVal: '2.4×', kpiId: 'kpiMOIC', newKpi: '2.4×', label: 'MOIC (bear case)' },
+                ],
+                reply: `Bear case scenario applied — revenue –7%, EBITDA margin compression –2pp, SOFR +300bps.<div class="data-card"><div class="data-row"><span class="data-lbl">Revenue FY2025E</span><span class="data-val" style="color:var(--red)">$1,228M → $1,140M ↓</span></div><div class="data-row"><span class="data-lbl">EBITDA Margin</span><span class="data-val" style="color:var(--red)">26.2% → 24.0% ↓</span></div><div class="data-row"><span class="data-lbl">IRR</span><span class="data-val" style="color:var(--amber);font-weight:700">24.1% → 17.2% ↓</span></div><div class="data-row"><span class="data-lbl">MOIC</span><span class="data-val" style="color:var(--amber)">3.4× → 2.4× ↓</span></div></div>Still above 15% hurdle rate — deal passes stress test.<div class="act-row"><span class="act-btn p" onclick="showToast('✓ Reverted to base case')">Restore base case</span><span class="act-btn" onclick="showModal('sensModal');buildSensTable()">Sensitivity table</span></div>`,
+            },
+        };
+
+
+        // ══════════════════════════════════════════
+        //  ROBUST CELL VALUE SETTER
+        // ══════════════════════════════════════════
+        function setCellValue(cellId, newVal, glowType) {
+            const el = document.getElementById('cell-' + cellId);
+            if (!el) { console.warn('setCellValue: cell not found:', cellId); return; }
+
+            // Find or create the value span (skip ring/flag divs)
+            let sp = el.querySelector('span:not(.collab-name):not(.ai-step-text):not(.ai-step-dot)');
+            if (!sp) {
+                // No span yet - create one
+                sp = document.createElement('span');
+                el.insertBefore(sp, el.firstChild);
+            }
+            sp.textContent = newVal;
+
+            // Apply glow
+            el.classList.remove('cell-bbg-update', 'cell-ai-update');
+            void el.offsetWidth; // force reflow to restart animation
+            el.classList.add(glowType === 'ai' ? 'cell-ai-update' : 'cell-bbg-update');
+            setTimeout(() => el.classList.remove('cell-bbg-update', 'cell-ai-update'), 2000);
+        }
+        async function aiTakeAction(actionKey) {
+            const action = AI_ACTIONS[actionKey];
+            if (!action) return;
+            isTyping = true;
+            document.getElementById('sendBtn').disabled = true;
+            try {
+
+                const cont = document.getElementById('chatMsgs');
+
+                // Show thinking process step by step
+                const thinkDiv = document.createElement('div');
+                thinkDiv.className = 'msg msg-a';
+                const thinkBubble = document.createElement('div');
+                thinkBubble.className = 'bubble ai-thinking-bubble';
+                thinkBubble.innerHTML = `<div class="ai-step-list" id="aiStepList"></div>`;
+                thinkDiv.appendChild(thinkBubble);
+                cont.appendChild(thinkDiv);
+                cont.scrollTop = cont.scrollHeight;
+
+                const stepList = document.getElementById('aiStepList');
+
+                for (let i = 0; i < action.steps.length; i++) {
+                    await demoDelay(650);
+                    const step = document.createElement('div');
+                    step.className = 'ai-step';
+                    step.innerHTML = `<span class="ai-step-dot"></span><span class="ai-step-text">${action.steps[i]}</span>`;
+                    stepList.appendChild(step);
+                    step.offsetHeight; // reflow
+                    step.classList.add('visible');
+                    cont.scrollTop = cont.scrollHeight;
+                }
+
+                // Apply model changes with staged delays
+                await demoDelay(400);
+                for (let i = 0; i < action.changes.length; i++) {
+                    const ch = action.changes[i];
+                    await demoDelay(i === 0 ? 200 : 280);
+                    setCellValue(ch.cell, ch.newVal, 'ai');
+                    // Update color class for KPI cells
+                    if (ch.kpiId) {
+                        const elK = document.getElementById('cell-' + ch.cell);
+                        if (elK) { const spK = elK.querySelector('span'); if (spK) spK.className = actionKey !== 'stress' ? 'cn pos' : 'cn neg'; }
+                        animateKPI(ch.kpiId, '', ch.newKpi, ch.kpiColor || (actionKey === 'stress' ? 'var(--amber)' : 'var(--green)'));
+                    }
+                    addAuditEntryLive(ch.cell, 'AI: ' + ch.label, 't-fml', 'AI');
+                }
+
+                // Remove thinking bubble, add final message
+                await demoDelay(500);
+                thinkDiv.remove();
+                addAIMsg(action.reply);
+
+                isTyping = false;
+                document.getElementById('sendBtn').disabled = false;
+
+                // If tour is on step 3 (AI step), advance to step 4 after AI responds
+                if (typeof tourActive !== 'undefined' && tourActive && typeof tourStep !== 'undefined' && tourStep === 2) {
+                    setTimeout(() => { tourStep = 3; renderTourStep(); }, 1200);
+                }
+            } catch (err) {
+                console.warn('aiTakeAction error:', err);
+                isTyping = false;
+                document.getElementById('sendBtn').disabled = false;
+                try { addAIMsg('I encountered an issue processing that request. Please try again.'); } catch (e) { }
+            }
+        }
+
+        // Override sendMsg to also detect AI actions
+        // Unified sendMsg dispatcher — replaces original + handles AI actions
+        window.sendMsg = function () {
+            const input = document.getElementById('chatInput');
+            const rawText = input.value.trim();
+            if (!rawText || isTyping) return;
+
+            const lc = rawText.toLowerCase();
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Show user message
+            const cont = document.getElementById('chatMsgs');
+            const udiv = document.createElement('div');
+            udiv.className = 'msg msg-u';
+            udiv.innerHTML = '<div class="bubble">' + escHtml(rawText) + '</div><div class="msg-meta">You · just now</div>';
+            cont.appendChild(udiv);
+            cont.scrollTop = cont.scrollHeight;
+
+            // Check for AI action keywords first (optimize / stress)
+            for (const [key, action] of Object.entries(AI_ACTIONS)) {
+                if (action.match.some(k => lc.includes(k))) {
+                    aiTakeAction(key);
+                    return;
+                }
+            }
+
+            // Otherwise: standard AI responses
+            isTyping = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'msg msg-a';
+            typingDiv.innerHTML = '<div class="typing-ind"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>';
+            cont.appendChild(typingDiv);
+            cont.scrollTop = cont.scrollHeight;
+
+            const delay = 900 + Math.random() * 700;
+            setTimeout(() => {
+                typingDiv.remove();
+                isTyping = false;
+                document.getElementById('sendBtn').disabled = false;
+
+                const match = AI_RESPONSES.find(r => r.match.some(k => lc.includes(k)));
+                if (match) {
+                    addAIMsg(match.reply);
+                } else {
+                    addAIMsg('Analyzing <strong>' + escHtml(rawText) + '</strong> in context of LBO Model v3.2…<br><br>I\'ve reviewed the relevant cells and formula dependencies. Would you like me to apply changes directly?<div class="act-row"><span class="act-btn p" onclick="showToast(\'✓ Change queued for approval\')">Apply to model</span><span class="act-btn" onclick="showModal(\'approvalModal\')">Submit for approval</span></div>');
+                }
+            }, delay);
+        };
+
+        // ══════════════════════════════════════════
+        //  RICH TOAST
+        // ══════════════════════════════════════════
+        function showToastRich(icon, title, sub, type) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMsg').innerHTML = `<strong>${title}</strong><br><span style="font-size:11px;opacity:.75">${sub}</span>`;
+            t.className = `toast show toast-${type || 'default'}`;
+            clearTimeout(toastT);
+            toastT = setTimeout(() => { t.className = 'toast'; }, 3500);
+        }
+
+        // ══════════════════════════════════════════
+        //  GUIDED TOUR — ENHANCED
+        // ══════════════════════════════════════════
+        const TOUR_STEPS = [
+            {
+                icon: '📊',
+                tag: 'Step 1 of 4 · Welcome',
+                title: 'A live LBO model',
+                body: "You're looking at ACME Corp v3.2 — a fully functional leveraged buyout model. Every metric updates in real-time as data changes.",
+                features: [
+                    { icon: '⬤', color: 'var(--green)', text: 'IRR, MOIC, and Net Debt recalculate automatically' },
+                    { icon: '●', color: 'var(--accent2)', text: '4 analysts collaborating live right now' },
+                    { icon: '✦', color: 'var(--purple)', text: 'AI co-pilot has full model context' },
+                ],
+                target: '.kpibar',
+                position: 'below-center',
+                spotlight: '.kpibar',
+                tryLabel: null,
+                tryFn: null,
+            },
+            {
+                icon: '⬤',
+                iconBg: 'rgba(245,158,11,.15)',
+                iconBorder: 'rgba(245,158,11,.3)',
+                tag: 'Step 2 of 4 · Live Data',
+                title: 'Sync Bloomberg in one click',
+                body: 'Connect to Bloomberg Terminal and pull live financials. Watch 12 cells update in sequence — then see IRR and MOIC recompute automatically.',
+                demo: '<span style="color:var(--amber)">⬤ BBG</span> → <span style="color:var(--text2)">Syncing 12 fields…</span> → <span style="color:var(--green)">IRR: 22.4% → 24.1% ↑</span>',
+                target: '.bbg-pulse-target',
+                position: 'below-left',
+                spotlight: '.bbg-pulse-target',
+                tryLabel: '⬤ Sync Bloomberg now',
+                tryFn: () => { showModal('bbgModal'); /* user clicks Sync Now themselves */ },
+            },
+            {
+                icon: '✦',
+                iconBg: 'rgba(79,127,255,.12)',
+                iconBorder: 'rgba(79,127,255,.25)',
+                tag: 'Step 3 of 4 · AI Co-Pilot',
+                title: 'AI that modifies the model',
+                body: "This isn't just a chatbot. Ask Grydx AI to optimize returns or stress-test the model — it will adjust assumptions, update cells, and recalculate IRR live.",
+                demo: '<span style="color:var(--accent2)">You:</span> <span style="color:var(--text2)">"Optimize the model for better returns"</span><br><span style="color:var(--accent2)">AI:</span> <span style="color:var(--green)">Adjusting EBITDA margin… IRR: 24.1% → 25.8% ↑</span>',
+                target: '#aiSidebar',
+                position: 'left-center',
+                spotlight: '#panelChat',
+                tryLabel: '✦ Try AI now',
+                tryFn: () => { focusChat(); setTimeout(() => { fillPrompt('Optimize the model for better returns'); setTimeout(sendMsg, 400); }, 300); },
+            },
+            {
+                icon: '📋',
+                iconBg: 'rgba(34,197,94,.1)',
+                iconBorder: 'rgba(34,197,94,.2)',
+                tag: 'Step 4 of 4 · Compliance',
+                title: 'SOX-compliant audit trail',
+                body: "Every cell change, Bloomberg sync, and AI action is logged with user identity, timestamp, and formula snapshot. One-click export for SEC and Fed review.",
+                features: [
+                    { icon: '✓', color: 'var(--green)', text: 'Tamper-proof, cryptographically signed logs' },
+                    { icon: '✓', color: 'var(--green)', text: 'One-click export: SOX PDF for regulators' },
+                    { icon: '✓', color: 'var(--green)', text: 'Director approval workflows built-in' },
+                ],
+                target: '#tabAudit',
+                position: 'left-top',
+                spotlight: '.sb-tabs',
+                tryLabel: 'View audit log',
+                tryFn: () => { document.getElementById('tabAudit').click(); },
+            },
+        ];
+
+        let tourStep = 0;
+        let tourActive = false;
+
+        function showOnboarding() {
+            tourActive = true;
+            tourStep = 0;
+            renderTourStep();
+        }
+
+        function renderTourStep() {
+            if (!tourActive || tourStep >= TOUR_STEPS.length) { closeOnboarding(); return; }
+            const step = TOUR_STEPS[tourStep];
+            const card = document.getElementById('tourCard');
+            const inner = document.getElementById('tourCardInner');
+
+            // Update progress
+            const pct = ((tourStep + 1) / TOUR_STEPS.length * 100);
+            document.getElementById('tourProgressFill').style.width = pct + '%';
+
+            // Dots
+            const dots = document.getElementById('tourDots');
+            dots.innerHTML = TOUR_STEPS.map((_, i) =>
+                `<div style="width:${i === tourStep ? 20 : 6}px;height:6px;border-radius:3px;background:${i === tourStep ? 'var(--accent)' : i < tourStep ? 'rgba(79,127,255,.4)' : 'var(--border2)'};transition:all .3s ease;"></div>`
+            ).join('');
+
+            // Icon
+            const iconEl = document.getElementById('tourIcon');
+            iconEl.textContent = step.icon;
+            iconEl.style.background = step.iconBg || 'rgba(79,127,255,.12)';
+            iconEl.style.border = '1px solid ' + (step.iconBorder || 'rgba(79,127,255,.2)');
+
+            // Content
+            document.getElementById('tourTag').textContent = step.tag;
+            document.getElementById('tourTitle').textContent = step.title;
+            document.getElementById('tourBody').textContent = step.body;
+
+            // Features
+            const featureEl = document.getElementById('tourFeatures');
+            if (step.features) {
+                featureEl.style.display = '';
+                featureEl.innerHTML = step.features.map(f =>
+                    `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);">
+        <span style="color:${f.color};width:14px;text-align:center;flex-shrink:0">${f.icon}</span>
+        <span>${f.text}</span>
+      </div>`
+                ).join('');
+            } else {
+                featureEl.style.display = 'none';
+            }
+
+            // Demo area
+            const demoEl = document.getElementById('tourDemo');
+            if (step.demo) {
+                demoEl.style.display = '';
+                demoEl.innerHTML = step.demo;
+            } else {
+                demoEl.style.display = 'none';
+            }
+
+            // Try button
+            const tryBtn = document.getElementById('tourTry');
+            if (step.tryLabel) {
+                tryBtn.style.display = '';
+                tryBtn.textContent = step.tryLabel;
+                tryBtn.onclick = step.tryFn;
+            } else {
+                tryBtn.style.display = 'none';
+            }
+
+            // Next button
+            const nextBtn = document.getElementById('tourNext');
+            nextBtn.textContent = tourStep < TOUR_STEPS.length - 1 ? 'Next →' : 'Done ✓';
+            nextBtn.style.background = tourStep === TOUR_STEPS.length - 1 ? 'var(--green)' : 'var(--accent)';
+
+            // Spotlight
+            document.querySelectorAll('.ob-spotlight').forEach(e => e.classList.remove('ob-spotlight'));
+            if (step.spotlight) {
+                const sp = document.querySelector(step.spotlight);
+                if (sp) sp.classList.add('ob-spotlight');
+            }
+
+            // Show and position card
+            card.style.display = 'block';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(8px) scale(.98)';
+            card.style.transition = 'opacity .25s ease, transform .25s ease';
+
+            requestAnimationFrame(() => {
+                positionTourCard(step);
+                requestAnimationFrame(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        }
+
+        function positionTourCard(step) {
+            const card = document.getElementById('tourCard');
+            const targetEl = step.target ? document.querySelector(step.target) : null;
+            const W = window.innerWidth, H = window.innerHeight;
+            const cw = card.offsetWidth || 340;
+            const ch = card.offsetHeight || 280;
+            let top, left;
+
+            if (targetEl) {
+                const r = targetEl.getBoundingClientRect();
+                if (step.position === 'below-center') {
+                    top = r.bottom + 14; left = r.left + r.width / 2 - cw / 2;
+                } else if (step.position === 'below-left') {
+                    top = r.bottom + 14; left = r.left;
+                } else if (step.position === 'left-center') {
+                    top = r.top + r.height / 2 - ch / 2; left = r.left - cw - 16;
+                } else if (step.position === 'left-top') {
+                    top = r.top; left = r.left - cw - 16;
+                } else {
+                    top = r.bottom + 14; left = r.left;
+                }
+            } else {
+                top = H / 2 - ch / 2; left = W / 2 - cw / 2;
+            }
+
+            // Clamp to viewport
+            left = Math.max(12, Math.min(left, W - cw - 12));
+            top = Math.max(12, Math.min(top, H - ch - 12));
+            card.style.left = left + 'px';
+            card.style.top = top + 'px';
+        }
+
+        function nextOnboarding() {
+            tourStep++;
+            if (tourStep >= TOUR_STEPS.length) { closeOnboarding(); return; }
+            const card = document.getElementById('tourCard');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-6px) scale(.98)';
+            setTimeout(renderTourStep, 180);
+        }
+
+        function closeOnboarding() {
+            tourActive = false;
+            const card = document.getElementById('tourCard');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(6px)';
+            setTimeout(() => { card.style.display = 'none'; }, 250);
+            document.querySelectorAll('.ob-spotlight').forEach(e => e.classList.remove('ob-spotlight'));
+        }
+
+        // ══════════════════════════════════════════
+        //  DEPENDENCY HIGHLIGHTING
+        // ══════════════════════════════════════════
+        const DEPENDENCIES = {
+            'E3': ['E5', 'E8', 'E6', 'E19', 'E20'],
+            'D3': ['D5', 'D8', 'C5', 'D5'],
+            'C3': ['C5', 'C8'],
+            'E5': ['E6', 'E8', 'E19', 'E20'],
+            'D5': ['D8'],
+            'E8': ['E6', 'E19'],
+            'B26': ['F29'],
+            'B27': ['F29'],
+        };
+
+        function highlightDeps(cellId) {
+            document.querySelectorAll('.dep-highlight').forEach(e => e.classList.remove('dep-highlight'));
+            document.querySelectorAll('.dep-source').forEach(e => e.classList.remove('dep-source'));
+            const deps = DEPENDENCIES[cellId];
+            if (!deps) return;
+            const src = document.getElementById(`cell-${cellId}`);
+            if (src) src.classList.add('dep-source');
+            deps.forEach(dep => {
+                const el = document.getElementById(`cell-${dep}`);
+                if (el) el.classList.add('dep-highlight');
+            });
+            setTimeout(() => {
+                document.querySelectorAll('.dep-highlight').forEach(e => e.classList.remove('dep-highlight'));
+                document.querySelectorAll('.dep-source').forEach(e => e.classList.remove('dep-source'));
+            }, 2800);
+        }
+
+        // Hook into activateCell to show deps
+        const _origActivate = window.activateCell;
+        window.activateCell = function (id) {
+            _origActivate(id);
+            highlightDeps(id);
+        };
+
+        // ══════════════════════════════════════════
+        //  BOOT SEQUENCE
+        // ══════════════════════════════════════════
+        setTimeout(() => {
+            showOnboarding();
+        }, 1800);
+
+        // Gentle BBG pulse after 10s if user hasn't clicked it
+        let hasSynced = false;
+        setTimeout(() => {
+            if (!hasSynced) {
+                document.querySelectorAll('.bbg-pulse-target').forEach(btn => btn.classList.add('bbg-attention'));
+            }
+        }, 10000);
+
+        // ══════════════════════════════════════════
+        //  SEC PULL ENHANCEMENT
+        // ══════════════════════════════════════════
+        const _origSECPull = window.runSECPull;
+        window.runSECPull = function () {
+            closeModal('secModal');
+            showToastRich('📄', 'SEC Edgar pulling…', 'ACME Corp 10-K FY2024', 'default');
+
+            const SEC_UPDATES = [
+                { cell: 'D3', newVal: '$1,058M', delay: 800 },
+                { cell: 'D5', newVal: '$283M', delay: 1000 },
+                { cell: 'D8', newVal: '$219M', delay: 1200 },
+            ];
+
+            SEC_UPDATES.forEach(u => {
+                setTimeout(() => {
+                    const el = document.getElementById(`cell-${u.cell}`);
+                    if (el) {
+                        const sp = el.querySelector('span');
+                        if (sp) sp.textContent = u.newVal;
+                        el.classList.add('cell-bbg-update');
+                        setTimeout(() => el.classList.remove('cell-bbg-update'), 1400);
+                    }
+                    addAuditEntryLive(u.cell, `SEC 10-K FY2024: ${u.newVal}`, 't-dat', 'SEC');
+                }, u.delay);
+            });
+
+            setTimeout(() => {
+                showToastRich('✓', 'SEC data imported', '3 cells updated from 10-K FY2024', 'default');
+                switchSideTabByName('chat');
+                addAIMsg(`SEC Edgar 10-K FY2024 import complete.<div class="data-card"><div class="data-row"><span class="data-lbl">Revenue FY2024A</span><span class="data-val">$1,058M (filed)</span></div><div class="data-row"><span class="data-lbl">EBITDA FY2024A</span><span class="data-val">$283M (filed)</span></div><div class="data-row"><span class="data-lbl">Net Income</span><span class="data-val">$74.3M</span></div></div>3 cells updated. Bloomberg and SEC data now consistent. Audit log updated.<div class="act-row"><span class="act-btn p" onclick="showModal('approvalModal')">Submit v3.4</span></div>`);
+            }, 2000);
+        };
+
+        console.log('%cGrydx v3.2 — Financial Operating System loaded', 'color:#4f7fff;font-weight:bold;font-size:13px');
+
+
+        // ══════════════════════════════════════════
+        //  INIT — ensure always called
+        // ══════════════════════════════════════════
+        (function safeInit() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', runInit);
+            } else {
+                runInit();
+            }
+            function runInit() {
+                if (typeof buildSheet === 'function') buildSheet();
+                if (typeof buildAuditList === 'function') buildAuditList();
+                if (typeof buildErrsList === 'function') buildErrsList();
+                if (typeof initChat === 'function') initChat();
+                if (typeof activateCell === 'function') activateCell('E6');
+            }
+        })();
     </script>
+
+    <!-- ═══════════════════════════════════════════════════════
+     UPGRADE INJECTED CSS
+     ═══════════════════════════════════════════════════════ -->
+    <style>
+        /* ── CELL ANIMATION STATES ── */
+        @keyframes bbgPulse {
+            0% {
+                background: transparent;
+                outline: none;
+            }
+
+            12% {
+                background: rgba(245, 158, 11, .45);
+                outline: 2px solid #f59e0b;
+                outline-offset: -1px;
+            }
+
+            45% {
+                background: rgba(245, 158, 11, .22);
+                outline: 1px solid rgba(245, 158, 11, .6);
+                outline-offset: -1px;
+            }
+
+            100% {
+                background: transparent;
+                outline: none;
+            }
+        }
+
+        .cell-bbg-update {
+            animation: bbgPulse 1.8s ease forwards !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+
+        @keyframes aiPulse {
+            0% {
+                background: transparent;
+                outline: none;
+            }
+
+            12% {
+                background: rgba(79, 127, 255, .45);
+                outline: 2px solid #4f7fff;
+                outline-offset: -1px;
+            }
+
+            45% {
+                background: rgba(79, 127, 255, .22);
+                outline: 1px solid rgba(79, 127, 255, .6);
+                outline-offset: -1px;
+            }
+
+            100% {
+                background: transparent;
+                outline: none;
+            }
+        }
+
+        15% {
+            background: rgba(79, 127, 255, .35);
+            box-shadow: inset 0 0 0 2px rgba(79, 127, 255, .9), 0 0 14px rgba(79, 127, 255, .35);
+        }
+
+        50% {
+            background: rgba(79, 127, 255, .18);
+            box-shadow: inset 0 0 0 1px rgba(79, 127, 255, .5);
+        }
+
+        100% {
+            background: transparent;
+            box-shadow: none;
+        }
+        }
+
+        .cell-ai-update {
+            animation: aiPulse 2s ease forwards !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }
+
+        /* ── DEPENDENCY HIGHLIGHTING ── */
+        .dep-source {
+            outline: 2px solid var(--accent2) !important;
+            background: rgba(79, 127, 255, .08) !important;
+        }
+
+        .dep-highlight {
+            background: rgba(79, 127, 255, .07) !important;
+            outline: 1px dashed rgba(79, 127, 255, .4);
+            animation: depPulse 2.8s ease;
+        }
+
+        @keyframes depPulse {
+
+            0%,
+            100% {
+                background: rgba(79, 127, 255, .07);
+            }
+
+            50% {
+                background: rgba(79, 127, 255, .18);
+            }
+        }
+
+        /* ── KPI ANIMATIONS ── */
+        @keyframes kpiFlash {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            30% {
+                transform: scale(1.08);
+                filter: brightness(1.5);
+            }
+
+            60% {
+                transform: scale(1.04);
+                filter: brightness(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .kpi-flash {
+            animation: kpiFlash .5s ease forwards;
+        }
+
+        @keyframes kpiGlow {
+            0% {
+                text-shadow: none;
+            }
+
+            50% {
+                text-shadow: 0 0 20px currentColor;
+            }
+
+            100% {
+                text-shadow: none;
+            }
+        }
+
+        .kpi-updated {
+            animation: kpiGlow 1.8s ease;
+        }
+
+        /* ── BBG BUTTON PULSE ── */
+        @keyframes bbgAttention {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+                border-color: rgba(245, 158, 11, .25);
+            }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(245, 158, 11, .15);
+                border-color: rgba(245, 158, 11, .8);
+            }
+        }
+
+        .bbg-attention {
+            animation: bbgAttention 2s ease infinite !important;
+        }
+
+        .demo-pulse-active {
+            animation: bbgAttention .8s ease 2 !important;
+        }
+
+        /* ── TOUR SPOTLIGHT ── */
+        .ob-spotlight {
+            position: relative;
+            z-index: 100 !important;
+            box-shadow: 0 0 0 3px rgba(79, 127, 255, .5), 0 0 30px rgba(79, 127, 255, .18) !important;
+            border-radius: 5px;
+            transition: box-shadow .3s ease;
+        }
+
+        /* ── TOUR CARD TRANSITION ── */
+        #tourCard {
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        /* ── LIVE TICKER ITEMS ── */
+        #mktTicker .mkt-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #mktTicker .mkt-sym {
+            color: var(--text3);
+            font-size: 9.5px;
+        }
+
+        #mktTicker .mkt-price {
+            color: var(--text2);
+        }
+
+        #mktTicker .mkt-chg.up {
+            color: var(--green);
+        }
+
+        #mktTicker .mkt-chg.dn {
+            color: var(--red);
+        }
+
+        /* ── AI THINKING STEPS ── */
+        .ai-thinking-bubble {
+            padding: 10px 12px;
+        }
+
+        .ai-step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        .ai-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text3);
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: opacity .25s ease, transform .25s ease, color .3s;
+        }
+
+        .ai-step.visible {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--text2);
+        }
+
+        .ai-step-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            animation: stepDot 1s ease infinite;
+        }
+
+        @keyframes stepDot {
+
+            0%,
+            100% {
+                opacity: .4;
+                transform: scale(.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .ai-step.visible:last-child .ai-step-dot {
+            background: var(--green);
+            animation: none;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* market ticker, clock and collab styles moved to inline */
+
+        /* ── TOAST VARIANTS ── */
+        .toast-amber {
+            border-color: rgba(245, 158, 11, .4) !important;
+        }
+
+        .toast-amber .toast-icon {
+            color: var(--amber);
+        }
+
+        /* ── BBG LIVE PRICE IN MODAL ── */
+        #bbgLivePrice {
+            font-family: 'DM Mono', monospace;
+            color: var(--amber);
+            font-size: 11px;
+        }
+
+        /* ── ENHANCED PILL HINTS ── */
+        .pill:nth-child(1) {
+            border-color: rgba(79, 127, 255, .2);
+            color: var(--accent2);
+        }
+
+        .pill:nth-child(2) {
+            border-color: rgba(34, 197, 94, .2);
+            color: var(--green);
+        }
+
+        /* ── BBG PULSE TARGET ── */
+        .bbg-pulse-target {
+            transition: box-shadow .3s, border-color .3s !important;
+        }
+    </style>
+
+    <!-- ═══════════════════════════════════════════════════════
+     ONBOARDING TOOLTIP HTML
+     ═══════════════════════════════════════════════════════ -->
+    <!-- ═══ GUIDED TOUR OVERLAY ═══ -->
+    <div id="tourOverlay" style="display:none;position:fixed;inset:0;z-index:9990;pointer-events:none;"></div>
+
+    <div id="tourCard" style="display:none;position:fixed;z-index:9999;width:340px;">
+        <!-- Progress bar -->
+        <div id="tourProgress"
+            style="height:3px;background:var(--border2);border-radius:2px;margin-bottom:0;overflow:hidden;border-radius:10px 10px 0 0;">
+            <div id="tourProgressFill"
+                style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:33%;transition:width .4s ease;border-radius:2px;">
+            </div>
+        </div>
+        <div id="tourCardInner"
+            style="background:#0f1420;border:1px solid rgba(79,127,255,.35);border-top:none;border-radius:0 0 12px 12px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(79,127,255,.08);overflow:hidden;">
+            <!-- Step indicator -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;">
+                <div style="display:flex;gap:6px" id="tourDots"></div>
+                <button onclick="closeOnboarding()"
+                    style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;transition:color .12s;"
+                    onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">×</button>
+            </div>
+            <!-- Icon + title -->
+            <div style="padding:14px 18px 0;display:flex;align-items:flex-start;gap:12px;">
+                <div id="tourIcon"
+                    style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(79,127,255,.12);border:1px solid rgba(79,127,255,.2);">
+                    📊</div>
+                <div>
+                    <div id="tourTag"
+                        style="font-size:9.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--accent2);margin-bottom:4px;font-family:'DM Mono',monospace;">
+                        STEP 1 OF 4</div>
+                    <div id="tourTitle"
+                        style="font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.3px;line-height:1.3;">
+                        Welcome to Grydx</div>
+                </div>
+            </div>
+            <!-- Body -->
+            <div id="tourBody" style="padding:10px 18px 14px;font-size:12.5px;color:var(--text2);line-height:1.6;">
+            </div>
+            <!-- Feature list (optional) -->
+            <div id="tourFeatures" style="margin:0 18px 12px;display:none;"></div>
+            <!-- Demo area (optional) -->
+            <div id="tourDemo"
+                style="margin:0 18px 14px;display:none;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text2);">
+            </div>
+            <!-- Footer -->
+            <div
+                style="padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);">
+                <button onclick="closeOnboarding()"
+                    style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:5px 8px;border-radius:5px;transition:all .12s;"
+                    onmouseover="this.style.color='var(--text2)';this.style.background='var(--surface3)'"
+                    onmouseout="this.style.color='var(--text3)';this.style.background='none'">Skip tour</button>
+                <div style="display:flex;gap:7px;align-items:center;">
+                    <button id="tourTry" onclick=""
+                        style="display:none;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .12s;font-family:'DM Sans',sans-serif;"
+                        onmouseover="this.style.background='rgba(34,197,94,.2)'"
+                        onmouseout="this.style.background='rgba(34,197,94,.1)'">Try it live →</button>
+                    <button id="tourNext" onclick="nextOnboarding()"
+                        style="background:var(--accent);border:none;color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .12s;font-family:'DM Sans',sans-serif;"
+                        onmouseover="this.style.background='#3d6be8'"
+                        onmouseout="this.style.background='var(--accent)'">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keep old onboarding div so existing JS refs don't break -->
+    <div id="onboarding" style="display:none;"></div>
 </body>
 
 </html>
